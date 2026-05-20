@@ -11,9 +11,7 @@
     <style>
         body { font-family: sans-serif; }
         .screen { transition: opacity 0.3s ease; }
-        /* WhatsApp Chat Background */
         .chat-bg { background-color: #efeae2; background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); }
-        /* Custom Toast Animation */
         @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
         .toast-animate { animation: slideDown 0.4s ease forwards; }
     </style>
@@ -23,34 +21,30 @@
     <div id="toast-msg" class="hidden fixed left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full text-white font-bold shadow-2xl text-center min-w-[250px] transition-all"></div>
 
     <div id="loading-screen" class="screen flex flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6">
-        <h1 class="text-4xl font-bold text-white mb-2 animate-bounce">Telugu Connect</h1>
+        <h1 class="text-4xl font-bold text-white mb-2 animate-bounce">TC.</h1>
         <p class="text-white text-sm">Loading your vibe...</p>
     </div>
 
     <div id="login-screen" class="screen hidden flex flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6">
         <h1 class="text-5xl font-extrabold text-white mb-2 drop-shadow-md">TC.</h1>
         <p class="text-white mb-10 text-center font-medium">Meet Telugu youths around you!</p>
-        
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
             <h2 class="text-xl font-bold mb-4 text-gray-800">18+ Only</h2>
             <button onclick="handleGoogleLogin()" class="w-full bg-black text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 transition">
                 <span>Continue with Google</span>
             </button>
-            <p class="text-xs text-gray-500 mt-4">By logging in, you agree to our terms.</p>
         </div>
     </div>
 
     <div id="profile-setup-screen" class="screen hidden flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 overflow-y-auto">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-sm my-auto">
             <h2 class="text-2xl font-bold mb-2 text-gray-800 dark:text-white text-center">Your Profile</h2>
-            
             <div class="flex flex-col items-center mb-6">
-                <div id="setup-pic-preview" class="w-24 h-24 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center mb-2 flex items-center justify-center overflow-hidden relative">
+                <div id="setup-pic-preview" class="w-24 h-24 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center flex items-center justify-center overflow-hidden relative">
                     <span class="text-xs text-gray-500 absolute pointer-events-none">Tap to upload</span>
-                    <input type="file" id="photo-upload" accept="image/*" onchange="handlePhotoUpload(event)" class="absolute inset-0 opacity-0 cursor-pointer">
+                    <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'setup')" class="absolute inset-0 opacity-0 cursor-pointer">
                 </div>
             </div>
-
             <div class="space-y-4">
                 <input type="text" id="setup-name" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none" placeholder="Display Name">
                 <input type="text" id="setup-username" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none" placeholder="Username (no spaces)">
@@ -64,15 +58,39 @@
                 </div>
                 <input type="text" id="setup-city" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none" placeholder="City (e.g., Hyderabad)">
             </div>
+            <button onclick="saveProfileSetup()" class="w-full bg-pink-500 text-white font-bold py-3 mt-6 rounded-xl hover:bg-pink-600 transition shadow-lg">Save & Enter</button>
+        </div>
+    </div>
 
-            <button onclick="saveProfileSetup()" class="w-full bg-pink-500 text-white font-bold py-3 mt-6 rounded-xl hover:bg-pink-600 transition shadow-lg">
-                Save & Enter
-            </button>
+    <div id="settings-screen" class="screen hidden flex-col h-full w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto">
+        <div class="bg-white dark:bg-gray-800 p-4 shadow flex items-center gap-4 z-10">
+            <button onclick="switchScreen('home-screen')" class="text-pink-600 font-bold text-xl">&larr;</button>
+            <h1 class="text-xl font-bold text-gray-800 dark:text-white">Edit Profile</h1>
+        </div>
+        <div class="p-6 flex flex-col items-center">
+            <div id="edit-pic-preview" class="w-32 h-32 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center mb-6 flex items-center justify-center overflow-hidden relative shadow-lg">
+                <span class="text-xs text-white bg-black/50 px-2 py-1 rounded absolute pointer-events-none">Change Photo</span>
+                <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'edit')" class="absolute inset-0 opacity-0 cursor-pointer">
+            </div>
+            <div class="w-full max-w-sm space-y-4">
+                <div>
+                    <label class="text-xs text-gray-500 dark:text-gray-400 font-bold ml-1">Display Name</label>
+                    <input type="text" id="edit-name" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 dark:text-gray-400 font-bold ml-1">City</label>
+                    <input type="text" id="edit-city" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 dark:text-gray-400 font-bold ml-1">Bio</label>
+                    <textarea id="edit-bio" rows="3" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none"></textarea>
+                </div>
+                <button onclick="saveEditedProfile()" class="w-full bg-pink-500 text-white font-bold py-3 mt-4 rounded-xl hover:bg-pink-600 shadow-lg transition">Update Profile</button>
+            </div>
         </div>
     </div>
 
     <div id="home-screen" class="screen hidden flex-col h-full w-full bg-gray-50 dark:bg-gray-900 relative transition-colors">
-        
         <div id="match-overlay" class="absolute inset-0 bg-black/95 z-50 hidden flex-col justify-center items-center p-6 text-center">
             <h1 class="text-5xl font-extrabold text-pink-500 mb-2">Match! 💖</h1>
             <p class="text-white text-lg mb-8">You both liked each other.</p>
@@ -85,10 +103,10 @@
         </div>
 
         <div class="bg-white dark:bg-gray-800 p-4 shadow flex justify-between items-center transition-colors z-10">
-            <h1 class="text-xl font-bold text-pink-600">Discover</h1>
-            <div class="flex gap-4">
+            <h1 class="text-2xl font-extrabold text-pink-600 tracking-tighter">TC.</h1>
+            <div class="flex gap-5 items-center">
                 <button onclick="toggleDarkMode()" class="text-xl">🌙</button>
-                <button onclick="switchScreen('chat-screen')" class="text-gray-600 dark:text-gray-300 font-semibold">Chats</button>
+                <button onclick="openSettings()" class="text-xl">⚙️</button>
             </div>
         </div>
 
@@ -112,10 +130,11 @@
         <div class="bg-[#075e54] text-white p-4 shadow-md flex items-center gap-3 z-10">
             <button onclick="exitChat()" class="font-bold text-xl">&larr;</button>
             <div id="chat-header-pic" class="w-10 h-10 rounded-full bg-gray-300 bg-cover bg-center"></div>
-            <div>
-                <h1 id="chat-header-name" class="font-bold">Chat</h1>
-                <p class="text-xs text-gray-200">Online</p>
+            <div class="flex-1">
+                <h1 id="chat-header-name" class="font-bold leading-tight">Chat</h1>
+                <p id="chat-header-status" class="text-xs text-gray-300">Connecting...</p>
             </div>
+            <button onclick="blockUser()" class="text-red-400 hover:text-red-300 font-bold text-lg" title="Block User">🚫</button>
         </div>
 
         <div class="flex-1 p-4 overflow-y-auto chat-bg flex flex-col gap-2" id="chat-messages-container">
@@ -128,7 +147,7 @@
         </div>
     </div>
 
-    <script>
+<script>
         function switchScreen(targetScreenId) {
             const screens = document.querySelectorAll('.screen');
             screens.forEach(screen => {
@@ -139,7 +158,6 @@
             document.getElementById(targetScreenId).classList.add('flex');
         }
 
-        // CUSTOM TOAST FUNCTION (Replaces Alert)
         window.showToast = (msg, type = 'success') => {
             const toast = document.getElementById('toast-msg');
             toast.innerText = msg;
@@ -148,10 +166,7 @@
             setTimeout(() => { toast.classList.add('hidden'); }, 3000);
         }
 
-        window.toggleDarkMode = () => {
-            document.documentElement.classList.toggle('dark');
-        }
-
+        window.toggleDarkMode = () => { document.documentElement.classList.toggle('dark'); }
         window.onload = () => { switchScreen('loading-screen'); };
     </script>
 
@@ -159,7 +174,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        // NEW: Firebase Storage Imports
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -175,7 +189,7 @@
         window.auth = getAuth(app);
         window.provider = new GoogleAuthProvider();
         window.db = getFirestore(app);
-        window.storage = getStorage(app); // Storage Init
+        window.storage = getStorage(app);
 
         window.currentUserData = null; 
         window.feedProfiles = [];      
@@ -183,11 +197,15 @@
         window.matchedProfileData = null; 
         window.activeChatId = null;
         window.unsubscribeChatListener = null;
+        window.unsubscribeStatusListener = null; // New listener for online status
         window.tempUploadedPhotoUrl = null; 
 
-        // AUTO-LOGIN SESSION
+        // AUTO-LOGIN & ONLINE STATUS HOOK
         onAuthStateChanged(window.auth, async (user) => {
             if (user) {
+                // Set user Online status in Firestore
+                await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true });
+
                 window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
                 const userRef = doc(window.db, "Users", user.uid);
                 const userSnap = await getDoc(userRef);
@@ -213,8 +231,8 @@
             catch (error) { window.showToast("Login Failed", "error"); switchScreen('login-screen'); }
         };
 
-        // NEW: PHOTO UPLOAD LOGIC
-        window.handlePhotoUpload = async (event) => {
+        // PHOTO UPLOAD (Handles both Setup & Edit screens)
+        window.handlePhotoUpload = async (event, source) => {
             const file = event.target.files[0];
             if(!file) return;
             
@@ -224,11 +242,11 @@
                 await uploadBytes(storageRef, file);
                 window.tempUploadedPhotoUrl = await getDownloadURL(storageRef);
                 
-                document.getElementById('setup-pic-preview').style.backgroundImage = `url('${window.tempUploadedPhotoUrl}')`;
-                window.showToast("Photo updated!", "success");
+                const previewId = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
+                document.getElementById(previewId).style.backgroundImage = `url('${window.tempUploadedPhotoUrl}')`;
+                window.showToast("Photo uploaded!", "success");
             } catch (e) {
-                window.showToast("Upload failed. Storage rules set chesava?", "error");
-                console.error(e);
+                window.showToast("Upload failed.", "error");
             }
         };
 
@@ -239,30 +257,52 @@
             const gender = document.getElementById('setup-gender').value;
             const city = document.getElementById('setup-city').value.trim();
 
-            if (!name || !username || !age || !gender || !city) {
-                window.showToast("Anni fields fill cheyali bro!", "error"); return;
-            }
+            if (!name || !username || !age || !gender || !city) { window.showToast("Anni fields fill cheyali bro!", "error"); return; }
             if (age < 18) { window.showToast("Strictly 18+ Only!", "error"); return; }
 
-            // Final Photo URL check
             const finalPicUrl = window.tempUploadedPhotoUrl || window.currentUserData.photoURL || 'https://via.placeholder.com/150';
 
             try {
-                const userRef = doc(window.db, "Users", window.currentUserData.uid);
                 const profilePayload = {
                     uid: window.currentUserData.uid, name, username, age, gender, city, 
                     email: window.currentUserData.email || "", profilePicUrl: finalPicUrl,
-                    bio: "Using Telugu Connect."
+                    bio: "Using Telugu Connect.", online: true
                 };
-
-                await setDoc(userRef, profilePayload, { merge: true });
+                await setDoc(doc(window.db, "Users", window.currentUserData.uid), profilePayload, { merge: true });
                 window.currentUserData = profilePayload;
                 window.showToast("Profile ready!");
                 switchScreen('home-screen');
                 window.fetchDiscoverFeed();
             } catch (error) { window.showToast("Error saving profile", "error"); }
         };
+ // EDIT PROFILE FUNCTIONS
+        window.openSettings = () => {
+            document.getElementById('edit-name').value = window.currentUserData.name || '';
+            document.getElementById('edit-city').value = window.currentUserData.city || '';
+            document.getElementById('edit-bio').value = window.currentUserData.bio || '';
+            document.getElementById('edit-pic-preview').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
+            window.tempUploadedPhotoUrl = null; // Reset temp URL
+            switchScreen('settings-screen');
+        };
 
+        window.saveEditedProfile = async () => {
+            const name = document.getElementById('edit-name').value.trim();
+            const city = document.getElementById('edit-city').value.trim();
+            const bio = document.getElementById('edit-bio').value.trim();
+
+            if(!name || !city) { window.showToast("Name and City required!", "error"); return; }
+            const finalPicUrl = window.tempUploadedPhotoUrl || window.currentUserData.profilePicUrl;
+
+            try {
+                const updates = { name, city, bio, profilePicUrl: finalPicUrl };
+                await setDoc(doc(window.db, "Users", window.currentUserData.uid), updates, { merge: true });
+                window.currentUserData = { ...window.currentUserData, ...updates };
+                window.showToast("Profile Updated!", "success");
+                switchScreen('home-screen');
+            } catch (error) { window.showToast("Error updating", "error"); }
+        };
+
+        // FEED & MATCHING
         window.fetchDiscoverFeed = async () => {
             const targetGender = window.currentUserData.gender === "Boy" ? "Girl" : "Boy";
             const q = query(collection(window.db, "Users"), where("gender", "==", targetGender));
@@ -301,19 +341,32 @@
 
         window.closeMatchOverlay = () => { document.getElementById('match-overlay').classList.add('hidden'); document.getElementById('match-overlay').classList.remove('flex'); };
 
+        // REAL-TIME CHAT & ONLINE STATUS
         window.goToChatFromMatch = () => {
             window.closeMatchOverlay();
             if(window.matchedProfileData) {
+                const targetUid = window.matchedProfileData.uid;
                 document.getElementById('chat-header-name').innerText = window.matchedProfileData.name;
                 document.getElementById('chat-header-pic').style.backgroundImage = `url('${window.matchedProfileData.profilePicUrl}')`;
-                const u1 = window.currentUserData.uid; const u2 = window.matchedProfileData.uid;
-                window.activeChatId = u1 < u2 ? `${u1}_${u2}` : `${u2}_${u1}`;
+                
+                const u1 = window.currentUserData.uid; 
+                window.activeChatId = u1 < targetUid ? `${u1}_${targetUid}` : `${targetUid}_${u1}`;
+                
+                // Track Target User's Online Status
+                window.unsubscribeStatusListener = onSnapshot(doc(window.db, "Users", targetUid), (docSnap) => {
+                    if(docSnap.exists()){
+                        const isOnline = docSnap.data().online;
+                        const statusElem = document.getElementById('chat-header-status');
+                        statusElem.innerText = isOnline ? 'Online' : 'Offline';
+                        statusElem.className = isOnline ? 'text-xs text-green-300 font-bold' : 'text-xs text-gray-300';
+                    }
+                });
+
                 window.listenToMessages();
             }
             switchScreen('chat-screen');
         };
 
-        // NEW: WHATSAPP FORMATTED CHAT LISTENER
         window.listenToMessages = () => {
             const q = query(collection(window.db, "Chats", window.activeChatId, "Messages"), orderBy("timestamp", "asc"));
             window.unsubscribeChatListener = onSnapshot(q, (snapshot) => {
@@ -324,7 +377,6 @@
                     const data = docSnap.data();
                     const isMe = data.senderId === window.currentUserData.uid;
                     
-                    // Time Formatting
                     let timeString = "";
                     if(data.timestamp) {
                         const date = data.timestamp.toDate();
@@ -332,7 +384,7 @@
                     }
 
                     const msgBubble = document.createElement('div');
-   if (isMe) {
+                    if (isMe) {
                         msgBubble.className = "bg-[#dcf8c6] text-gray-800 p-2 px-3 rounded-lg rounded-tr-none self-end max-w-[80%] shadow-sm relative text-sm";
                         msgBubble.innerHTML = `<span>${data.text}</span><span class="text-[10px] text-gray-500 ml-3 float-right mt-2">${timeString} <span class="text-blue-500">✓✓</span></span>`;
                     } else {
@@ -357,7 +409,28 @@
             } catch (err) { window.showToast("Message failed to send", "error"); }
         };
 
-        window.exitChat = () => { if(window.unsubscribeChatListener) window.unsubscribeChatListener(); switchScreen('home-screen'); };
+        // BLOCK USER FEATURE
+        window.blockUser = async () => {
+            const confirmBlock = confirm("Are you sure you want to block this user?");
+            if(confirmBlock) {
+                try {
+                    // Logic: Add to a 'Blocks' collection
+                    const blockRef = doc(window.db, "Blocks", `${window.currentUserData.uid}_${window.matchedProfileData.uid}`);
+                    await setDoc(blockRef, { blocker: window.currentUserData.uid, blocked: window.matchedProfileData.uid, timestamp: Date.now() });
+                    
+                    window.showToast("User blocked successfully", "error");
+                    window.exitChat();
+                } catch (e) {
+                    window.showToast("Block failed", "error");
+                }
+            }
+        };
+
+        window.exitChat = () => { 
+            if(window.unsubscribeChatListener) window.unsubscribeChatListener(); 
+            if(window.unsubscribeStatusListener) window.unsubscribeStatusListener();
+            switchScreen('home-screen'); 
+        };
     </script>
 </body>
 </html>
