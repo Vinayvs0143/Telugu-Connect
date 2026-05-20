@@ -65,7 +65,22 @@
         </div>
     </div>
 
-    <div id="home-screen" class="screen hidden flex-col h-full w-full bg-gray-50">
+    <div id="home-screen" class="screen hidden flex-col h-full w-full bg-gray-50 relative">
+        <div id="match-overlay" class="absolute inset-0 bg-black/90 z-50 hidden flex-col justify-center items-center p-6 text-center animate-fade-in">
+            <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400 mb-2">It's a Match! 💖</h1>
+            <p class="text-white text-lg mb-8">Iddaru okarini okaru like cheskunnaru!</p>
+            <div class="flex gap-4 mb-10">
+                <div id="match-my-pic" class="w-24 h-24 rounded-full border-4 border-white bg-cover bg-center"></div>
+                <div id="match-their-pic" class="w-24 h-24 rounded-full border-4 border-white bg-cover bg-center"></div>
+            </div>
+            <button onclick="goToChatFromMatch()" class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-pink-600 transition mb-4 w-full max-w-xs">
+                Send Message 💬
+            </button>
+            <button onclick="closeMatchOverlay()" class="text-gray-400 hover:text-white transition font-medium">
+                Keep Swiping
+            </button>
+        </div>
+
         <div class="bg-white p-4 shadow flex justify-between items-center">
             <h1 class="text-xl font-bold text-pink-600">Discover</h1>
             <button onclick="switchScreen('chat-screen')" class="text-gray-600 font-semibold">Chats</button>
@@ -73,8 +88,7 @@
 
         <div class="flex-1 p-4 flex justify-center items-center" id="feed-container">
             <div id="profile-card" class="bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden relative">
-                <div id="card-image-bg" class="h-80 bg-cover bg-center flex items-center justify-center text-gray-500" style="background-image: url('https://via.placeholder.com/400');">
-                    </div>
+                <div id="card-image-bg" class="h-80 bg-cover bg-center flex items-center justify-center text-gray-500" style="background-image: url('https://via.placeholder.com/400');"></div>
                 <div class="p-4">
                     <h2 id="card-name-age" class="text-2xl font-bold text-gray-800">Loading profiles...</h2>
                     <p id="card-city" class="text-gray-600"></p>
@@ -92,16 +106,11 @@
     <div id="chat-screen" class="screen hidden flex-col h-full w-full bg-white">
         <div class="bg-white p-4 shadow flex items-center gap-4">
             <button onclick="switchScreen('home-screen')" class="text-pink-600 font-bold">&larr; Back</button>
-            <h1 class="text-xl font-bold text-gray-800">Priya</h1>
+            <h1 id="chat-header-name" class="text-xl font-bold text-gray-800">Chat</h1>
         </div>
 
-        <div class="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3">
-            <div class="bg-pink-100 p-3 rounded-lg rounded-tl-none self-start max-w-[80%]">
-                <p class="text-gray-800">Hi bro! Ekkada untav?</p>
-            </div>
-            <div class="bg-blue-500 text-white p-3 rounded-lg rounded-tr-none self-end max-w-[80%]">
-                <p>Hello! Nenu Hyderabad lo untanu, nuvvu?</p>
-            </div>
+        <div class="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3" id="chat-messages-container">
+            <div class="text-center text-gray-400 text-sm mt-10">No messages yet. Say Hi! 👋</div>
         </div>
 
         <div class="p-3 bg-white border-t border-gray-200 flex gap-2">
@@ -130,8 +139,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        
-        // Dynamic collection handling queries add చేసాం
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -151,6 +158,7 @@
         window.currentUserData = null; 
         window.feedProfiles = [];      
         window.currentFeedIndex = 0;   
+        window.matchedProfileData = null; // Track match targeted users
 
         // LOGIN FLOW
         window.handleGoogleLogin = async () => {
@@ -166,7 +174,6 @@
                     window.currentUserData.uid = user.uid;
                     alert("Welcome back, " + window.currentUserData.name + "!");
                     switchScreen('home-screen');
-                    // Real users ni database nunchi load chesthunnam
                     window.fetchDiscoverFeed();
                 } else {
                     window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
@@ -193,12 +200,6 @@
                 return;
             }
 
-            const usernameRegex = /^[a-zA-Z0-9_]+$/;
-            if (!usernameRegex.test(usernameInput)) {
-                alert("Username spaces lekunda character limits maintain chey.");
-                return;
-            }
-
             if (age < 18) {
                 alert("Sorry 🛑! Ee app strictly 18+ years valla kosame.");
                 return;
@@ -207,6 +208,7 @@
             try {
                 const userRef = doc(window.db, "Users", window.currentUserData.uid);
                 const profilePayload = {
+                    uid: window.currentUserData.uid,
                     name: nameInput,
                     username: usernameInput,
                     age: age,
@@ -232,13 +234,12 @@
         window.fetchDiscoverFeed = async () => {
             try {
                 const targetGender = window.currentUserData.gender === "Boy" ? "Girl" : "Boy";
-                
-                // Query: Filter profiles based on opposite gender setup targets
                 const q = query(collection(window.db, "Users"), where("gender", "==", targetGender));
                 const querySnapshot = await getDocs(q);
                 
                 window.feedProfiles = [];
                 querySnapshot.forEach((doc) => {
+                    // Self checking filter logs data logic
                     window.feedProfiles.push(doc.data());
                 });
 
@@ -249,38 +250,78 @@
             }
         };
 
-        // RENDER PROFILE DATA ON UI
         window.renderCurrentProfile = () => {
             if (window.feedProfiles.length === 0 || window.currentFeedIndex >= window.feedProfiles.length) {
                 document.getElementById('profile-card').innerHTML = `
                     <div class="p-10 text-center flex flex-col justify-center items-center h-96">
                         <h3 class="text-xl font-bold text-gray-700">No More Profiles Around You! 🌍</h3>
-                        <p class="text-sm text-gray-400 mt-2">Malli tharvata try chey bro, or direct configuration verify chesko.</p>
+                        <p class="text-sm text-gray-400 mt-2">Malli tharvata try chey bro.</p>
                     </div>`;
                 document.getElementById('action-buttons-layer').classList.add('hidden');
                 return;
             }
 
             const currentProfile = window.feedProfiles[window.currentFeedIndex];
-            
-            // Dynamic value assignments mappings UI template update layout updates
             document.getElementById('card-image-bg').style.backgroundImage = `url('${currentProfile.profilePicUrl || 'https://via.placeholder.com/400'}')`;
             document.getElementById('card-name-age').innerText = `${currentProfile.name}, ${currentProfile.age}`;
             document.getElementById('card-city').innerText = `${currentProfile.city} • @${currentProfile.username}`;
             document.getElementById('card-bio').innerText = currentProfile.bio || "";
         };
 
-        // HANDLE BUTTON INTERACTION CLICK PIPELINES
-        window.handleAction = (actionType) => {
+        // SWIPING & MATCHING CORE ALGORITHM (NEW)
+        window.handleAction = async (actionType) => {
+            const targetProfile = window.feedProfiles[window.currentFeedIndex];
+            const myUid = window.currentUserData.uid;
+            const targetUid = targetProfile.uid;
+
             if (actionType === 'like') {
-                console.log("Liked profile setup tracing target parameters: ", window.feedProfiles[window.currentFeedIndex].name);
-            } else {
-                console.log("Passed profile tracking data inputs");
+                try {
+                    // 1. Current user liked target profile record saving
+                    const likeRef = doc(window.db, "Likes", `${myUid}_${targetUid}`);
+                    await setDoc(likeRef, {
+                        from: myUid,
+                        to: targetUid,
+                        timestamp: Date.now()
+                    });
+
+                    // 2. Reverse Check: Target user matching queries
+                    const reverseLikeRef = doc(window.db, "Likes", `${targetUid}_${myUid}`);
+                    const reverseLikeSnap = await getDoc(reverseLikeRef);
+
+                    if (reverseLikeSnap.exists()) {
+                        // MUTUAL MATCH DETECTED!
+                        window.matchedProfileData = targetProfile;
+                        
+                        // Set pics in overlay UI screen elements
+                        document.getElementById('match-my-pic').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
+                        document.getElementById('match-their-pic').style.backgroundImage = `url('${targetProfile.profilePicUrl}')`;
+                        
+                        // Show overlay element panel
+                        document.getElementById('match-overlay').classList.remove('hidden');
+                        document.getElementById('match-overlay').classList.add('flex');
+                    }
+                } catch (err) {
+                    console.error("Matching engine error: ", err);
+                }
             }
 
-            // Move pointer location arrays next indices targets
+            // Move to next card view model tracking parameters pointers
             window.currentFeedIndex++;
             window.renderCurrentProfile();
+        };
+
+        // OVERLAY BUTTON INTERACTION MAPPINGS
+        window.closeMatchOverlay = () => {
+            document.getElementById('match-overlay').classList.add('hidden');
+            document.getElementById('match-overlay').classList.remove('flex');
+        };
+
+        window.goToChatFromMatch = () => {
+            window.closeMatchOverlay();
+            if(window.matchedProfileData) {
+                document.getElementById('chat-header-name').innerText = window.matchedProfileData.name;
+            }
+            switchScreen('chat-screen');
         };
 
     </script>
