@@ -12,7 +12,12 @@
 </head>
 <body class="bg-gray-100 h-screen w-screen overflow-hidden">
 
-    <div id="login-screen" class="screen flex flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6">
+    <div id="loading-screen" class="screen flex flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6">
+        <h1 class="text-4xl font-bold text-white mb-2 animate-pulse">Telugu Connect</h1>
+        <p class="text-white text-sm">Loading your session, please wait...</p>
+    </div>
+
+    <div id="login-screen" class="screen hidden flex flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6">
         <h1 class="text-4xl font-bold text-white mb-2">Telugu Connect</h1>
         <p class="text-white mb-10 text-center">Meet Telugu youths around you!</p>
         
@@ -131,16 +136,17 @@
             targetScreen.classList.add('flex');
         }
 
+        // Initialize display with dynamic buffer layer tracking state limits
         window.onload = () => {
-            switchScreen('login-screen');
+            switchScreen('loading-screen');
         };
     </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         
-        // Chat operations database methods and timestamp listeners imported
+        // REPAIR FIX IMPORT: onAuthStateChanged session handler token modules
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -161,34 +167,42 @@
         window.feedProfiles = [];      
         window.currentFeedIndex = 0;   
         window.matchedProfileData = null; 
-        
-        // Chat Tracking Engine Objects Variables
         window.activeChatId = null;
         window.unsubscribeChatListener = null; 
 
-        // LOGIN FLOW
-        window.handleGoogleLogin = async () => {
-            try {
-                const result = await signInWithPopup(window.auth, window.provider);
-                const user = result.user;
+        // CRITICAL BUG FIX: Realtime Global Auth Session Listener Hooks
+        onAuthStateChanged(window.auth, async (user) => {
+            if (user) {
+                console.log("Persistence active token found: ", user.displayName);
+                window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
                 
+                // Firestore record integrity checkpoints verification lines
                 const userRef = doc(window.db, "Users", user.uid);
                 const userSnap = await getDoc(userRef);
 
                 if (userSnap.exists() && userSnap.data().age && userSnap.data().gender && userSnap.data().username) {
                     window.currentUserData = userSnap.data();
                     window.currentUserData.uid = user.uid;
-                    alert("Welcome back, " + window.currentUserData.name + "!");
                     switchScreen('home-screen');
                     window.fetchDiscoverFeed();
                 } else {
-                    window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
                     switchScreen('profile-setup-screen');
                     document.getElementById('setup-name').value = user.displayName || "";
                 }
-                
+            } else {
+                // If token missing, clear view to login standard paths securely
+                switchScreen('login-screen');
+            }
+        });
+
+        // REFACTORED GOOGLE POPUP TRIGGER
+        window.handleGoogleLogin = async () => {
+            try {
+                // Popup handling tracking token updates automatically sync listeners
+                await signInWithPopup(window.auth, window.provider);
             } catch (error) {
                 alert("Login Error: " + error.message);
+                switchScreen('login-screen');
             }
         };
 
@@ -245,7 +259,9 @@
                 
                 window.feedProfiles = [];
                 querySnapshot.forEach((doc) => {
-                    window.feedProfiles.push(doc.data());
+                    if (doc.id !== window.currentUserData.uid) {
+                        window.feedProfiles.push(doc.data());
+                    }
                 });
 
                 window.currentFeedIndex = 0;
@@ -314,32 +330,29 @@
             document.getElementById('match-overlay').classList.remove('flex');
         };
 
-        // REAL-TIME CHAT OPERATIONS (NEW)
+        // REAL-TIME CHAT OPERATIONS
         window.goToChatFromMatch = () => {
             window.closeMatchOverlay();
             if(window.matchedProfileData) {
                 document.getElementById('chat-header-name').innerText = window.matchedProfileData.name;
                 
-                // Initialize active chat session ID algorithm parameters
                 const myUid = window.currentUserData.uid;
                 const targetUid = window.matchedProfileData.uid;
                 window.activeChatId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${myUid}`;
                 
-                // Launch listener streams
                 window.listenToMessages();
             }
             switchScreen('chat-screen');
         };
 
-        // LISTEN TO MESSAGES IN REALTIME (NEW)
+        // LISTEN TO MESSAGES IN REALTIME
         window.listenToMessages = () => {
             const msgRef = collection(window.db, "Chats", window.activeChatId, "Messages");
             const q = query(msgRef, orderBy("timestamp", "asc"));
 
-            // Realtime database listener hook setup
             window.unsubscribeChatListener = onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('chat-messages-container');
-                container.innerHTML = ""; // Clear loader layers
+                container.innerHTML = ""; 
 
                 if(snapshot.empty) {
                     container.innerHTML = `<div class="text-center text-gray-400 text-sm mt-10">No messages yet. Say Hi! 👋</div>`;
@@ -350,7 +363,6 @@
                     const data = doc.data();
                     const isMe = data.senderId === window.currentUserData.uid;
                     
-                    // Dynamic template bubble structure assignment variables logic setup
                     const msgBubble = document.createElement('div');
                     if (isMe) {
                         msgBubble.className = "bg-blue-500 text-white p-3 rounded-lg rounded-tr-none self-end max-w-[80%] shadow-sm";
@@ -362,12 +374,10 @@
                     container.appendChild(msgBubble);
                 });
 
-                // Scroll to view window to bottom automatically targets
                 container.scrollTop = container.scrollHeight;
             });
         };
 
-        // SEND LIVE MESSAGES DATA PAYLOAD PUSH (NEW)
         window.sendLiveMessage = async () => {
             const inputField = document.getElementById('msg-input');
             const messageText = inputField.value.trim();
@@ -379,14 +389,22 @@
                 await addDoc(msgRef, {
                     senderId: window.currentUserData.uid,
                     text: messageText,
-                    timestamp: serverTimestamp() // Official global Firebase timestamp
+                    timestamp: serverTimestamp() 
                 });
 
-                inputField.value = ""; // Clear text field parameters trace
+                inputField.value = ""; 
             } catch (err) {
                 console.error("Error sending message payload line: ", err);
             }
         };
 
-        // DISCONNECT CHAT LISTENERS ON EXIT
-        window.exi
+        window.exitChat = () => {
+            if(window.unsubscribeChatListener) {
+                window.unsubscribeChatListener(); 
+            }
+            switchScreen('home-screen');
+        };
+
+    </script>
+</body>
+</html>
