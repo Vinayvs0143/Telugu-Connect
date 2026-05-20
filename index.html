@@ -5,122 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Telugu Connect</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
     <style>
         body { font-family: sans-serif; }
         .screen { transition: opacity 0.3s ease; }
+        /* WhatsApp Chat Background */
+        .chat-bg { background-color: #efeae2; background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); }
+        /* Custom Toast Animation */
+        @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
+        .toast-animate { animation: slideDown 0.4s ease forwards; }
     </style>
 </head>
-<body class="bg-gray-100 h-screen w-screen overflow-hidden">
+<body class="bg-gray-100 dark:bg-gray-900 h-screen w-screen overflow-hidden transition-colors duration-300">
+
+    <div id="toast-msg" class="hidden fixed left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full text-white font-bold shadow-2xl text-center min-w-[250px] transition-all"></div>
 
     <div id="loading-screen" class="screen flex flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6">
-        <h1 class="text-4xl font-bold text-white mb-2 animate-pulse">Telugu Connect</h1>
-        <p class="text-white text-sm">Loading your session, please wait...</p>
+        <h1 class="text-4xl font-bold text-white mb-2 animate-bounce">Telugu Connect</h1>
+        <p class="text-white text-sm">Loading your vibe...</p>
     </div>
 
     <div id="login-screen" class="screen hidden flex flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6">
-        <h1 class="text-4xl font-bold text-white mb-2">Telugu Connect</h1>
-        <p class="text-white mb-10 text-center">Meet Telugu youths around you!</p>
+        <h1 class="text-5xl font-extrabold text-white mb-2 drop-shadow-md">TC.</h1>
+        <p class="text-white mb-10 text-center font-medium">Meet Telugu youths around you!</p>
         
-        <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm text-center">
-            <h2 class="text-xl font-semibold mb-4 text-gray-800">18+ Only</h2>
-            <button onclick="handleGoogleLogin()" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700">
-                <span>Login with Google</span>
+        <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+            <h2 class="text-xl font-bold mb-4 text-gray-800">18+ Only</h2>
+            <button onclick="handleGoogleLogin()" class="w-full bg-black text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 transition">
+                <span>Continue with Google</span>
             </button>
-            <p class="text-xs text-gray-500 mt-4">By logging in, you confirm you are 18+ years old.</p>
+            <p class="text-xs text-gray-500 mt-4">By logging in, you agree to our terms.</p>
         </div>
     </div>
 
     <div id="profile-setup-screen" class="screen hidden flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 overflow-y-auto">
-        <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm my-auto">
-            <h2 class="text-2xl font-bold mb-2 text-gray-800 text-center">Complete Your Profile</h2>
-            <p class="text-sm text-gray-500 mb-6 text-center">Tell us more about you to find right connections!</p>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-sm my-auto">
+            <h2 class="text-2xl font-bold mb-2 text-gray-800 dark:text-white text-center">Your Profile</h2>
             
-            <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Display Name</label>
-                <input type="text" id="setup-name" class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-pink-300" placeholder="Enter display name">
+            <div class="flex flex-col items-center mb-6">
+                <div id="setup-pic-preview" class="w-24 h-24 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center mb-2 flex items-center justify-center overflow-hidden relative">
+                    <span class="text-xs text-gray-500 absolute pointer-events-none">Tap to upload</span>
+                    <input type="file" id="photo-upload" accept="image/*" onchange="handlePhotoUpload(event)" class="absolute inset-0 opacity-0 cursor-pointer">
+                </div>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Username</label>
-                <input type="text" id="setup-username" class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-pink-300" placeholder="e.g., kalyan_123">
+            <div class="space-y-4">
+                <input type="text" id="setup-name" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none" placeholder="Display Name">
+                <input type="text" id="setup-username" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none" placeholder="Username (no spaces)">
+                <div class="flex gap-2">
+                    <input type="number" id="setup-age" min="18" max="99" class="w-1/2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none" placeholder="Age">
+                    <select id="setup-gender" class="w-1/2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none">
+                        <option value="">Gender</option>
+                        <option value="Boy">Boy</option>
+                        <option value="Girl">Girl</option>
+                    </select>
+                </div>
+                <input type="text" id="setup-city" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none" placeholder="City (e.g., Hyderabad)">
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Your Age</label>
-                <input type="number" id="setup-age" min="1" max="100" class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-pink-300" placeholder="Enter your age">
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700 mb-1">I am a</label>
-                <select id="setup-gender" class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-pink-300">
-                    <option value="">Select Gender</option>
-                    <option value="Boy">Boy 👦</option>
-                    <option value="Girl">Girl 👧</option>
-                </select>
-            </div>
-
-            <div class="mb-6">
-                <label class="block text-sm font-semibold text-gray-700 mb-1">City / Location</label>
-                <input type="text" id="setup-city" class="w-full border border-gray-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-pink-300" placeholder="e.g., Hyderabad, Vizag">
-            </div>
-
-            <button onclick="saveProfileSetup()" class="w-full bg-pink-500 text-white font-bold py-3 rounded-lg hover:bg-pink-600 transition">
-                Save & Continue
+            <button onclick="saveProfileSetup()" class="w-full bg-pink-500 text-white font-bold py-3 mt-6 rounded-xl hover:bg-pink-600 transition shadow-lg">
+                Save & Enter
             </button>
         </div>
     </div>
 
-    <div id="home-screen" class="screen hidden flex-col h-full w-full bg-gray-50 relative">
-        <div id="match-overlay" class="absolute inset-0 bg-black/90 z-50 hidden flex-col justify-center items-center p-6 text-center">
-            <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400 mb-2">It's a Match! 💖</h1>
-            <p class="text-white text-lg mb-8">Iddaru okarini okaru like cheskunnaru!</p>
+    <div id="home-screen" class="screen hidden flex-col h-full w-full bg-gray-50 dark:bg-gray-900 relative transition-colors">
+        
+        <div id="match-overlay" class="absolute inset-0 bg-black/95 z-50 hidden flex-col justify-center items-center p-6 text-center">
+            <h1 class="text-5xl font-extrabold text-pink-500 mb-2">Match! 💖</h1>
+            <p class="text-white text-lg mb-8">You both liked each other.</p>
             <div class="flex gap-4 mb-10">
-                <div id="match-my-pic" class="w-24 h-24 rounded-full border-4 border-white bg-cover bg-center"></div>
-                <div id="match-their-pic" class="w-24 h-24 rounded-full border-4 border-white bg-cover bg-center"></div>
+                <div id="match-my-pic" class="w-24 h-24 rounded-full border-2 border-white bg-cover bg-center shadow-lg"></div>
+                <div id="match-their-pic" class="w-24 h-24 rounded-full border-2 border-white bg-cover bg-center shadow-lg"></div>
             </div>
-            <button onclick="goToChatFromMatch()" class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-pink-600 transition mb-4 w-full max-w-xs">
-                Send Message 💬
-            </button>
-            <button onclick="closeMatchOverlay()" class="text-gray-400 hover:text-white transition font-medium">
-                Keep Swiping
-            </button>
+            <button onclick="goToChatFromMatch()" class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full w-full max-w-xs mb-4">Chat Now</button>
+            <button onclick="closeMatchOverlay()" class="text-gray-400">Keep Swiping</button>
         </div>
 
-        <div class="bg-white p-4 shadow flex justify-between items-center">
+        <div class="bg-white dark:bg-gray-800 p-4 shadow flex justify-between items-center transition-colors z-10">
             <h1 class="text-xl font-bold text-pink-600">Discover</h1>
-            <button onclick="switchScreen('chat-screen')" class="text-gray-600 font-semibold">Chats</button>
+            <div class="flex gap-4">
+                <button onclick="toggleDarkMode()" class="text-xl">🌙</button>
+                <button onclick="switchScreen('chat-screen')" class="text-gray-600 dark:text-gray-300 font-semibold">Chats</button>
+            </div>
         </div>
 
-        <div class="flex-1 p-4 flex justify-center items-center" id="feed-container">
-            <div id="profile-card" class="bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden relative">
-                <div id="card-image-bg" class="h-80 bg-cover bg-center flex items-center justify-center text-gray-500" style="background-image: url('https://via.placeholder.com/400');"></div>
-                <div class="p-4">
-                    <h2 id="card-name-age" class="text-2xl font-bold text-gray-800">Loading profiles...</h2>
-                    <p id="card-city" class="text-gray-600"></p>
-                    <p id="card-bio" class="text-sm text-gray-500 mt-2"></p>
+        <div class="flex-1 p-4 flex justify-center items-center relative overflow-hidden" id="feed-container">
+            <div id="profile-card" class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden relative transition-all">
+                <div id="card-image-bg" class="h-[400px] bg-cover bg-center flex items-center justify-center text-gray-500 bg-gray-200"></div>
+                <div class="p-5 absolute bottom-0 w-full bg-gradient-to-t from-black/80 to-transparent">
+                    <h2 id="card-name-age" class="text-3xl font-bold text-white shadow-sm">Loading...</h2>
+                    <p id="card-city" class="text-gray-200 font-medium"></p>
                 </div>
             </div>
         </div>
 
-        <div class="p-6 flex justify-center gap-6 mb-4" id="action-buttons-layer">
-            <button onclick="handleAction('pass')" class="bg-white text-red-500 shadow-lg rounded-full p-4 h-16 w-16 text-xl font-bold border border-red-100 hover:bg-red-50">X</button>
-            <button onclick="handleAction('like')" class="bg-gradient-to-r from-pink-500 to-orange-400 text-white shadow-lg rounded-full p-4 h-16 w-16 text-xl font-bold hover:opacity-90">♥</button>
+        <div class="p-6 flex justify-center gap-6 mb-4 z-10" id="action-buttons-layer">
+            <button onclick="handleAction('pass')" class="bg-white text-red-500 shadow-xl rounded-full h-16 w-16 text-2xl font-bold hover:scale-110 transition transform">✕</button>
+            <button onclick="handleAction('like')" class="bg-gradient-to-r from-pink-500 to-orange-400 text-white shadow-xl rounded-full h-16 w-16 text-2xl font-bold hover:scale-110 transition transform">♥</button>
         </div>
     </div>
 
-    <div id="chat-screen" class="screen hidden flex-col h-full w-full bg-white">
-        <div class="bg-white p-4 shadow flex items-center gap-4">
-            <button onclick="exitChat()" class="text-pink-600 font-bold">&larr; Back</button>
-            <h1 id="chat-header-name" class="text-xl font-bold text-gray-800">Chat</h1>
+    <div id="chat-screen" class="screen hidden flex-col h-full w-full bg-white relative">
+        <div class="bg-[#075e54] text-white p-4 shadow-md flex items-center gap-3 z-10">
+            <button onclick="exitChat()" class="font-bold text-xl">&larr;</button>
+            <div id="chat-header-pic" class="w-10 h-10 rounded-full bg-gray-300 bg-cover bg-center"></div>
+            <div>
+                <h1 id="chat-header-name" class="font-bold">Chat</h1>
+                <p class="text-xs text-gray-200">Online</p>
+            </div>
         </div>
 
-        <div class="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3" id="chat-messages-container">
-            <div class="text-center text-gray-400 text-sm mt-10">No messages yet. Say Hi! 👋</div>
+        <div class="flex-1 p-4 overflow-y-auto chat-bg flex flex-col gap-2" id="chat-messages-container">
+            <div class="text-center text-gray-600 bg-yellow-100/80 mx-auto px-3 py-1 rounded-lg text-xs mt-2 shadow-sm">Messages are end-to-end encrypted.</div>
         </div>
 
-        <div class="p-3 bg-white border-t border-gray-200 flex gap-2">
-            <input type="text" id="msg-input" placeholder="Type a message..." class="flex-1 bg-gray-100 rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-pink-300">
-            <button onclick="sendLiveMessage()" class="bg-pink-500 text-white rounded-full px-5 py-2 font-bold hover:bg-pink-600">Send</button>
+        <div class="p-2 bg-[#f0f0f0] flex gap-2 items-center">
+            <input type="text" id="msg-input" placeholder="Message" class="flex-1 bg-white rounded-full px-5 py-3 outline-none shadow-sm text-gray-800">
+            <button onclick="sendLiveMessage()" class="bg-[#128C7E] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] transition">➤</button>
         </div>
     </div>
 
@@ -131,23 +135,32 @@
                 screen.classList.add('hidden');
                 screen.classList.remove('flex');
             });
-            const targetScreen = document.getElementById(targetScreenId);
-            targetScreen.classList.remove('hidden');
-            targetScreen.classList.add('flex');
+            document.getElementById(targetScreenId).classList.remove('hidden');
+            document.getElementById(targetScreenId).classList.add('flex');
         }
 
-        // Initialize display with dynamic buffer layer tracking state limits
-        window.onload = () => {
-            switchScreen('loading-screen');
-        };
+        // CUSTOM TOAST FUNCTION (Replaces Alert)
+        window.showToast = (msg, type = 'success') => {
+            const toast = document.getElementById('toast-msg');
+            toast.innerText = msg;
+            toast.className = `toast-animate fixed top-[40px] left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full text-white font-bold shadow-2xl text-center min-w-[250px] ${type === 'error' ? 'bg-red-500' : 'bg-gray-900'}`;
+            toast.classList.remove('hidden');
+            setTimeout(() => { toast.classList.add('hidden'); }, 3000);
+        }
+
+        window.toggleDarkMode = () => {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        window.onload = () => { switchScreen('loading-screen'); };
     </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        
-        // REPAIR FIX IMPORT: onAuthStateChanged session handler token modules
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // NEW: Firebase Storage Imports
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC2vOFa2aMwQFa2KEej0ZuXVFQUHUQTZEc",
@@ -162,249 +175,189 @@
         window.auth = getAuth(app);
         window.provider = new GoogleAuthProvider();
         window.db = getFirestore(app);
+        window.storage = getStorage(app); // Storage Init
 
         window.currentUserData = null; 
         window.feedProfiles = [];      
         window.currentFeedIndex = 0;   
         window.matchedProfileData = null; 
         window.activeChatId = null;
-        window.unsubscribeChatListener = null; 
+        window.unsubscribeChatListener = null;
+        window.tempUploadedPhotoUrl = null; 
 
-        // CRITICAL BUG FIX: Realtime Global Auth Session Listener Hooks
+        // AUTO-LOGIN SESSION
         onAuthStateChanged(window.auth, async (user) => {
             if (user) {
-                console.log("Persistence active token found: ", user.displayName);
                 window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
-                
-                // Firestore record integrity checkpoints verification lines
                 const userRef = doc(window.db, "Users", user.uid);
                 const userSnap = await getDoc(userRef);
 
-                if (userSnap.exists() && userSnap.data().age && userSnap.data().gender && userSnap.data().username) {
+                if (userSnap.exists() && userSnap.data().age) {
                     window.currentUserData = userSnap.data();
                     window.currentUserData.uid = user.uid;
+                    window.showToast("Welcome back, " + window.currentUserData.name + "!");
                     switchScreen('home-screen');
                     window.fetchDiscoverFeed();
                 } else {
                     switchScreen('profile-setup-screen');
                     document.getElementById('setup-name').value = user.displayName || "";
+                    document.getElementById('setup-pic-preview').style.backgroundImage = `url('${user.photoURL}')`;
                 }
             } else {
-                // If token missing, clear view to login standard paths securely
                 switchScreen('login-screen');
             }
         });
 
-        // REFACTORED GOOGLE POPUP TRIGGER
         window.handleGoogleLogin = async () => {
+            try { await signInWithPopup(window.auth, window.provider); } 
+            catch (error) { window.showToast("Login Failed", "error"); switchScreen('login-screen'); }
+        };
+
+        // NEW: PHOTO UPLOAD LOGIC
+        window.handlePhotoUpload = async (event) => {
+            const file = event.target.files[0];
+            if(!file) return;
+            
+            window.showToast("Uploading photo...", "success");
             try {
-                // Popup handling tracking token updates automatically sync listeners
-                await signInWithPopup(window.auth, window.provider);
-            } catch (error) {
-                alert("Login Error: " + error.message);
-                switchScreen('login-screen');
+                const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
+                await uploadBytes(storageRef, file);
+                window.tempUploadedPhotoUrl = await getDownloadURL(storageRef);
+                
+                document.getElementById('setup-pic-preview').style.backgroundImage = `url('${window.tempUploadedPhotoUrl}')`;
+                window.showToast("Photo updated!", "success");
+            } catch (e) {
+                window.showToast("Upload failed. Storage rules set chesava?", "error");
+                console.error(e);
             }
         };
 
-        // PROFILE CONFIGURATION SAVE
         window.saveProfileSetup = async () => {
-            const nameInput = document.getElementById('setup-name').value.trim();
-            const usernameInput = document.getElementById('setup-username').value.trim().toLowerCase();
-            const ageInput = document.getElementById('setup-age').value;
-            const genderInput = document.getElementById('setup-gender').value;
-            const cityInput = document.getElementById('setup-city').value.trim();
-            const age = parseInt(ageInput);
+            const name = document.getElementById('setup-name').value.trim();
+            const username = document.getElementById('setup-username').value.trim().toLowerCase();
+            const age = parseInt(document.getElementById('setup-age').value);
+            const gender = document.getElementById('setup-gender').value;
+            const city = document.getElementById('setup-city').value.trim();
 
-            if (!nameInput || !usernameInput || !ageInput || !genderInput || !cityInput) {
-                alert("Anni fields fill cheyali bro!");
-                return;
+            if (!name || !username || !age || !gender || !city) {
+                window.showToast("Anni fields fill cheyali bro!", "error"); return;
             }
+            if (age < 18) { window.showToast("Strictly 18+ Only!", "error"); return; }
 
-            if (age < 18) {
-                alert("Sorry 🛑! Ee app strictly 18+ years valla kosame.");
-                return;
-            }
+            // Final Photo URL check
+            const finalPicUrl = window.tempUploadedPhotoUrl || window.currentUserData.photoURL || 'https://via.placeholder.com/150';
 
             try {
                 const userRef = doc(window.db, "Users", window.currentUserData.uid);
                 const profilePayload = {
-                    uid: window.currentUserData.uid,
-                    name: nameInput,
-                    username: usernameInput,
-                    age: age,
-                    gender: genderInput,
-                    city: cityInput,
-                    email: window.currentUserData.email || "",
-                    profilePicUrl: window.currentUserData.photoURL || "https://via.placeholder.com/150",
-                    bio: "Hey there! I am using Telugu Connect."
+                    uid: window.currentUserData.uid, name, username, age, gender, city, 
+                    email: window.currentUserData.email || "", profilePicUrl: finalPicUrl,
+                    bio: "Using Telugu Connect."
                 };
 
                 await setDoc(userRef, profilePayload, { merge: true });
                 window.currentUserData = profilePayload;
-                
-                alert("Profile successfully updated!");
+                window.showToast("Profile ready!");
                 switchScreen('home-screen');
                 window.fetchDiscoverFeed();
-            } catch (error) {
-                alert("Database Error: " + error.message);
-            }
+            } catch (error) { window.showToast("Error saving profile", "error"); }
         };
 
-        // DYNAMIC PROFILE FETCH LOGIC
         window.fetchDiscoverFeed = async () => {
-            try {
-                const targetGender = window.currentUserData.gender === "Boy" ? "Girl" : "Boy";
-                const q = query(collection(window.db, "Users"), where("gender", "==", targetGender));
-                const querySnapshot = await getDocs(q);
-                
-                window.feedProfiles = [];
-                querySnapshot.forEach((doc) => {
-                    if (doc.id !== window.currentUserData.uid) {
-                        window.feedProfiles.push(doc.data());
-                    }
-                });
-
-                window.currentFeedIndex = 0;
-                window.renderCurrentProfile();
-            } catch (e) {
-                console.error("Error pulling profiles:", e);
-            }
+            const targetGender = window.currentUserData.gender === "Boy" ? "Girl" : "Boy";
+            const q = query(collection(window.db, "Users"), where("gender", "==", targetGender));
+            const snap = await getDocs(q);
+            window.feedProfiles = [];
+            snap.forEach(doc => { if (doc.id !== window.currentUserData.uid) window.feedProfiles.push(doc.data()); });
+            window.currentFeedIndex = 0; window.renderCurrentProfile();
         };
 
         window.renderCurrentProfile = () => {
             if (window.feedProfiles.length === 0 || window.currentFeedIndex >= window.feedProfiles.length) {
-                document.getElementById('profile-card').innerHTML = `
-                    <div class="p-10 text-center flex flex-col justify-center items-center h-96">
-                        <h3 class="text-xl font-bold text-gray-700">No More Profiles Around You! 🌍</h3>
-                        <p class="text-sm text-gray-400 mt-2">Malli tharvata try chey bro.</p>
-                    </div>`;
-                document.getElementById('action-buttons-layer').classList.add('hidden');
-                return;
+                document.getElementById('profile-card').innerHTML = `<div class="p-10 text-center flex flex-col justify-center items-center h-full"><h3 class="text-xl font-bold dark:text-white">No Profiles Left! 🌍</h3></div>`;
+                document.getElementById('action-buttons-layer').classList.add('hidden'); return;
             }
-
-            const currentProfile = window.feedProfiles[window.currentFeedIndex];
-            document.getElementById('card-image-bg').style.backgroundImage = `url('${currentProfile.profilePicUrl || 'https://via.placeholder.com/400'}')`;
-            document.getElementById('card-name-age').innerText = `${currentProfile.name}, ${currentProfile.age}`;
-            document.getElementById('card-city').innerText = `${currentProfile.city} • @${currentProfile.username}`;
-            document.getElementById('card-bio').innerText = currentProfile.bio || "";
+            const p = window.feedProfiles[window.currentFeedIndex];
+            document.getElementById('card-image-bg').style.backgroundImage = `url('${p.profilePicUrl}')`;
+            document.getElementById('card-name-age').innerText = `${p.name}, ${p.age}`;
+            document.getElementById('card-city').innerText = p.city;
         };
 
-        // SWIPING & MATCHING CORE ALGORITHM
         window.handleAction = async (actionType) => {
-            const targetProfile = window.feedProfiles[window.currentFeedIndex];
-            const myUid = window.currentUserData.uid;
-            const targetUid = targetProfile.uid;
-
+            const target = window.feedProfiles[window.currentFeedIndex];
             if (actionType === 'like') {
-                try {
-                    const likeRef = doc(window.db, "Likes", `${myUid}_${targetUid}`);
-                    await setDoc(likeRef, {
-                        from: myUid,
-                        to: targetUid,
-                        timestamp: Date.now()
-                    });
-
-                    const reverseLikeRef = doc(window.db, "Likes", `${targetUid}_${myUid}`);
-                    const reverseLikeSnap = await getDoc(reverseLikeRef);
-
-                    if (reverseLikeSnap.exists()) {
-                        window.matchedProfileData = targetProfile;
-                        
-                        document.getElementById('match-my-pic').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
-                        document.getElementById('match-their-pic').style.backgroundImage = `url('${targetProfile.profilePicUrl}')`;
-                        
-                        document.getElementById('match-overlay').classList.remove('hidden');
-                        document.getElementById('match-overlay').classList.add('flex');
-                    }
-                } catch (err) {
-                    console.error("Matching engine error: ", err);
+                const myUid = window.currentUserData.uid; const targetUid = target.uid;
+                await setDoc(doc(window.db, "Likes", `${myUid}_${targetUid}`), { from: myUid, to: targetUid });
+                const revSnap = await getDoc(doc(window.db, "Likes", `${targetUid}_${myUid}`));
+                if (revSnap.exists()) {
+                    window.matchedProfileData = target;
+                    document.getElementById('match-my-pic').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
+                    document.getElementById('match-their-pic').style.backgroundImage = `url('${target.profilePicUrl}')`;
+                    document.getElementById('match-overlay').classList.remove('hidden'); document.getElementById('match-overlay').classList.add('flex');
                 }
             }
-
-            window.currentFeedIndex++;
-            window.renderCurrentProfile();
+            window.currentFeedIndex++; window.renderCurrentProfile();
         };
 
-        window.closeMatchOverlay = () => {
-            document.getElementById('match-overlay').classList.add('hidden');
-            document.getElementById('match-overlay').classList.remove('flex');
-        };
+        window.closeMatchOverlay = () => { document.getElementById('match-overlay').classList.add('hidden'); document.getElementById('match-overlay').classList.remove('flex'); };
 
-        // REAL-TIME CHAT OPERATIONS
         window.goToChatFromMatch = () => {
             window.closeMatchOverlay();
             if(window.matchedProfileData) {
                 document.getElementById('chat-header-name').innerText = window.matchedProfileData.name;
-                
-                const myUid = window.currentUserData.uid;
-                const targetUid = window.matchedProfileData.uid;
-                window.activeChatId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${myUid}`;
-                
+                document.getElementById('chat-header-pic').style.backgroundImage = `url('${window.matchedProfileData.profilePicUrl}')`;
+                const u1 = window.currentUserData.uid; const u2 = window.matchedProfileData.uid;
+                window.activeChatId = u1 < u2 ? `${u1}_${u2}` : `${u2}_${u1}`;
                 window.listenToMessages();
             }
             switchScreen('chat-screen');
         };
 
-        // LISTEN TO MESSAGES IN REALTIME
+        // NEW: WHATSAPP FORMATTED CHAT LISTENER
         window.listenToMessages = () => {
-            const msgRef = collection(window.db, "Chats", window.activeChatId, "Messages");
-            const q = query(msgRef, orderBy("timestamp", "asc"));
-
+            const q = query(collection(window.db, "Chats", window.activeChatId, "Messages"), orderBy("timestamp", "asc"));
             window.unsubscribeChatListener = onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('chat-messages-container');
-                container.innerHTML = ""; 
+                container.innerHTML = `<div class="text-center text-gray-600 bg-yellow-100/80 mx-auto px-3 py-1 rounded-lg text-xs mt-2 shadow-sm">Messages are end-to-end encrypted.</div>`; 
 
-                if(snapshot.empty) {
-                    container.innerHTML = `<div class="text-center text-gray-400 text-sm mt-10">No messages yet. Say Hi! 👋</div>`;
-                    return;
-                }
-
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
                     const isMe = data.senderId === window.currentUserData.uid;
                     
-                    const msgBubble = document.createElement('div');
-                    if (isMe) {
-                        msgBubble.className = "bg-blue-500 text-white p-3 rounded-lg rounded-tr-none self-end max-w-[80%] shadow-sm";
-                    } else {
-                        msgBubble.className = "bg-pink-100 text-gray-800 p-3 rounded-lg rounded-tl-none self-start max-w-[80%] shadow-sm";
+                    // Time Formatting
+                    let timeString = "";
+                    if(data.timestamp) {
+                        const date = data.timestamp.toDate();
+                        timeString = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     }
-                    
-                    msgBubble.innerHTML = `<p>${data.text}</p>`;
+
+                    const msgBubble = document.createElement('div');
+   if (isMe) {
+                        msgBubble.className = "bg-[#dcf8c6] text-gray-800 p-2 px-3 rounded-lg rounded-tr-none self-end max-w-[80%] shadow-sm relative text-sm";
+                        msgBubble.innerHTML = `<span>${data.text}</span><span class="text-[10px] text-gray-500 ml-3 float-right mt-2">${timeString} <span class="text-blue-500">✓✓</span></span>`;
+                    } else {
+                        msgBubble.className = "bg-white text-gray-800 p-2 px-3 rounded-lg rounded-tl-none self-start max-w-[80%] shadow-sm relative text-sm";
+                        msgBubble.innerHTML = `<span>${data.text}</span><span class="text-[10px] text-gray-400 ml-3 float-right mt-2">${timeString}</span>`;
+                    }
                     container.appendChild(msgBubble);
                 });
-
                 container.scrollTop = container.scrollHeight;
             });
         };
 
         window.sendLiveMessage = async () => {
-            const inputField = document.getElementById('msg-input');
-            const messageText = inputField.value.trim();
-
-            if(!messageText || !window.activeChatId) return;
-
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if(!text || !window.activeChatId) return;
             try {
-                const msgRef = collection(window.db, "Chats", window.activeChatId, "Messages");
-                await addDoc(msgRef, {
-                    senderId: window.currentUserData.uid,
-                    text: messageText,
-                    timestamp: serverTimestamp() 
+                await addDoc(collection(window.db, "Chats", window.activeChatId, "Messages"), {
+                    senderId: window.currentUserData.uid, text: text, timestamp: serverTimestamp() 
                 });
-
-                inputField.value = ""; 
-            } catch (err) {
-                console.error("Error sending message payload line: ", err);
-            }
+                input.value = ""; 
+            } catch (err) { window.showToast("Message failed to send", "error"); }
         };
 
-        window.exitChat = () => {
-            if(window.unsubscribeChatListener) {
-                window.unsubscribeChatListener(); 
-            }
-            switchScreen('home-screen');
-        };
-
+        window.exitChat = () => { if(window.unsubscribeChatListener) window.unsubscribeChatListener(); switchScreen('home-screen'); };
     </script>
 </body>
 </html>
