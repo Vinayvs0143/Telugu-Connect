@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Telugu Connect</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: sans-serif; }
+        .screen { transition: opacity 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gray-100 h-screen w-screen overflow-hidden">
+
+    <div id="login-screen" class="screen flex flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6">
+        <h1 class="text-4xl font-bold text-white mb-2">Telugu Connect</h1>
+        <p class="text-white mb-10 text-center">Meet Telugu youths around you!</p>
+        
+        <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm text-center">
+            <h2 class="text-xl font-semibold mb-4 text-gray-800">18+ Only</h2>
+            <button onclick="handleGoogleLogin()" class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700">
+                <span>Login with Google</span>
+            </button>
+            <p class="text-xs text-gray-500 mt-4">By logging in, you confirm you are 18+ years old.</p>
+        </div>
+    </div>
+
+    <div id="home-screen" class="screen hidden flex-col h-full w-full bg-gray-50">
+        <div class="bg-white p-4 shadow flex justify-between items-center">
+            <h1 class="text-xl font-bold text-pink-600">Discover</h1>
+            <button onclick="switchScreen('chat-screen')" class="text-gray-600 font-semibold">Chats</button>
+        </div>
+
+        <div class="flex-1 p-4 flex justify-center items-center">
+            <div class="bg-white w-full max-w-sm rounded-2xl shadow-xl overflow-hidden">
+                <div class="h-80 bg-gray-300 flex items-center justify-center text-gray-500">
+                    [Profile Photo Here]
+                </div>
+                <div class="p-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Priya, 21</h2>
+                    <p class="text-gray-600">Hyderabad • B.Tech Student</p>
+                    <p class="text-sm text-gray-500 mt-2">Looking for a good friend to chat and hangout.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6 flex justify-center gap-6 mb-4">
+            <button class="bg-white text-red-500 shadow-lg rounded-full p-4 h-16 w-16 text-xl font-bold border border-red-100 hover:bg-red-50">X</button>
+            <button class="bg-gradient-to-r from-pink-500 to-orange-400 text-white shadow-lg rounded-full p-4 h-16 w-16 text-xl font-bold hover:opacity-90">♥</button>
+        </div>
+    </div>
+
+    <div id="chat-screen" class="screen hidden flex-col h-full w-full bg-white">
+        <div class="bg-white p-4 shadow flex items-center gap-4">
+            <button onclick="switchScreen('home-screen')" class="text-pink-600 font-bold">&larr; Back</button>
+            <h1 class="text-xl font-bold text-gray-800">Priya</h1>
+        </div>
+
+        <div class="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3">
+            <div class="bg-pink-100 p-3 rounded-lg rounded-tl-none self-start max-w-[80%]">
+                <p class="text-gray-800">Hi bro! Ekkada untav?</p>
+            </div>
+            <div class="bg-blue-500 text-white p-3 rounded-lg rounded-tr-none self-end max-w-[80%]">
+                <p>Hello! Nenu Hyderabad lo untanu, nuvvu?</p>
+            </div>
+        </div>
+
+        <div class="p-3 bg-white border-t border-gray-200 flex gap-2">
+            <input type="text" id="msg-input" placeholder="Type a message..." class="flex-1 bg-gray-100 rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-pink-300">
+            <button class="bg-pink-500 text-white rounded-full px-5 py-2 font-bold">Send</button>
+        </div>
+    </div>
+
+    <script>
+        function switchScreen(targetScreenId) {
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(screen => {
+                screen.classList.add('hidden');
+                screen.classList.remove('flex');
+            });
+            const targetScreen = document.getElementById(targetScreenId);
+            targetScreen.classList.remove('hidden');
+            targetScreen.classList.add('flex');
+        }
+
+        window.onload = () => {
+            switchScreen('login-screen');
+        };
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2vOFa2aMwQFa2KEej0ZuXVFQUHUQTZEc",
+            authDomain: "telugu-connect-64786.firebaseapp.com",
+            projectId: "telugu-connect-64786",
+            storageBucket: "telugu-connect-64786.firebasestorage.app",
+            messagingSenderId: "341601787937",
+            appId: "1:341601787937:web:0d629d09af84817864c360"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        window.auth = getAuth(app);
+        window.provider = new GoogleAuthProvider();
+        window.db = getFirestore(app);
+
+        console.log("🔥 Firebase Connected!");
+
+        window.handleGoogleLogin = async () => {
+            try {
+                const result = await signInWithPopup(window.auth, window.provider);
+                const user = result.user;
+                
+                const userRef = doc(window.db, "Users", user.uid);
+                await setDoc(userRef, {
+                    name: user.displayName,
+                    email: user.email,
+                    profilePicUrl: user.photoURL,
+                    age: null, 
+                    gender: null,
+                    bio: "Hey there! I am using Telugu Connect."
+                }, { merge: true });
+
+                alert("Welcome, " + user.displayName + "!");
+                switchScreen('home-screen');
+                
+            } catch (error) {
+                alert("Login Error: " + error.message);
+            }
+        };
+    </script>
+</body>
+</html>
