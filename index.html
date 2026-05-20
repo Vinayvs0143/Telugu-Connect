@@ -66,7 +66,7 @@
     </div>
 
     <div id="home-screen" class="screen hidden flex-col h-full w-full bg-gray-50 relative">
-        <div id="match-overlay" class="absolute inset-0 bg-black/90 z-50 hidden flex-col justify-center items-center p-6 text-center animate-fade-in">
+        <div id="match-overlay" class="absolute inset-0 bg-black/90 z-50 hidden flex-col justify-center items-center p-6 text-center">
             <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400 mb-2">It's a Match! 💖</h1>
             <p class="text-white text-lg mb-8">Iddaru okarini okaru like cheskunnaru!</p>
             <div class="flex gap-4 mb-10">
@@ -105,7 +105,7 @@
 
     <div id="chat-screen" class="screen hidden flex-col h-full w-full bg-white">
         <div class="bg-white p-4 shadow flex items-center gap-4">
-            <button onclick="switchScreen('home-screen')" class="text-pink-600 font-bold">&larr; Back</button>
+            <button onclick="exitChat()" class="text-pink-600 font-bold">&larr; Back</button>
             <h1 id="chat-header-name" class="text-xl font-bold text-gray-800">Chat</h1>
         </div>
 
@@ -115,7 +115,7 @@
 
         <div class="p-3 bg-white border-t border-gray-200 flex gap-2">
             <input type="text" id="msg-input" placeholder="Type a message..." class="flex-1 bg-gray-100 rounded-full px-4 py-2 outline-none focus:ring-2 focus:ring-pink-300">
-            <button class="bg-pink-500 text-white rounded-full px-5 py-2 font-bold">Send</button>
+            <button onclick="sendLiveMessage()" class="bg-pink-500 text-white rounded-full px-5 py-2 font-bold hover:bg-pink-600">Send</button>
         </div>
     </div>
 
@@ -139,7 +139,9 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        
+        // Chat operations database methods and timestamp listeners imported
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC2vOFa2aMwQFa2KEej0ZuXVFQUHUQTZEc",
@@ -158,7 +160,11 @@
         window.currentUserData = null; 
         window.feedProfiles = [];      
         window.currentFeedIndex = 0;   
-        window.matchedProfileData = null; // Track match targeted users
+        window.matchedProfileData = null; 
+        
+        // Chat Tracking Engine Objects Variables
+        window.activeChatId = null;
+        window.unsubscribeChatListener = null; 
 
         // LOGIN FLOW
         window.handleGoogleLogin = async () => {
@@ -239,7 +245,6 @@
                 
                 window.feedProfiles = [];
                 querySnapshot.forEach((doc) => {
-                    // Self checking filter logs data logic
                     window.feedProfiles.push(doc.data());
                 });
 
@@ -268,7 +273,7 @@
             document.getElementById('card-bio').innerText = currentProfile.bio || "";
         };
 
-        // SWIPING & MATCHING CORE ALGORITHM (NEW)
+        // SWIPING & MATCHING CORE ALGORITHM
         window.handleAction = async (actionType) => {
             const targetProfile = window.feedProfiles[window.currentFeedIndex];
             const myUid = window.currentUserData.uid;
@@ -276,7 +281,6 @@
 
             if (actionType === 'like') {
                 try {
-                    // 1. Current user liked target profile record saving
                     const likeRef = doc(window.db, "Likes", `${myUid}_${targetUid}`);
                     await setDoc(likeRef, {
                         from: myUid,
@@ -284,19 +288,15 @@
                         timestamp: Date.now()
                     });
 
-                    // 2. Reverse Check: Target user matching queries
                     const reverseLikeRef = doc(window.db, "Likes", `${targetUid}_${myUid}`);
                     const reverseLikeSnap = await getDoc(reverseLikeRef);
 
                     if (reverseLikeSnap.exists()) {
-                        // MUTUAL MATCH DETECTED!
                         window.matchedProfileData = targetProfile;
                         
-                        // Set pics in overlay UI screen elements
                         document.getElementById('match-my-pic').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
                         document.getElementById('match-their-pic').style.backgroundImage = `url('${targetProfile.profilePicUrl}')`;
                         
-                        // Show overlay element panel
                         document.getElementById('match-overlay').classList.remove('hidden');
                         document.getElementById('match-overlay').classList.add('flex');
                     }
@@ -305,25 +305,88 @@
                 }
             }
 
-            // Move to next card view model tracking parameters pointers
             window.currentFeedIndex++;
             window.renderCurrentProfile();
         };
 
-        // OVERLAY BUTTON INTERACTION MAPPINGS
         window.closeMatchOverlay = () => {
             document.getElementById('match-overlay').classList.add('hidden');
             document.getElementById('match-overlay').classList.remove('flex');
         };
 
+        // REAL-TIME CHAT OPERATIONS (NEW)
         window.goToChatFromMatch = () => {
             window.closeMatchOverlay();
             if(window.matchedProfileData) {
                 document.getElementById('chat-header-name').innerText = window.matchedProfileData.name;
+                
+                // Initialize active chat session ID algorithm parameters
+                const myUid = window.currentUserData.uid;
+                const targetUid = window.matchedProfileData.uid;
+                window.activeChatId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${myUid}`;
+                
+                // Launch listener streams
+                window.listenToMessages();
             }
             switchScreen('chat-screen');
         };
 
-    </script>
-</body>
-</html>
+        // LISTEN TO MESSAGES IN REALTIME (NEW)
+        window.listenToMessages = () => {
+            const msgRef = collection(window.db, "Chats", window.activeChatId, "Messages");
+            const q = query(msgRef, orderBy("timestamp", "asc"));
+
+            // Realtime database listener hook setup
+            window.unsubscribeChatListener = onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('chat-messages-container');
+                container.innerHTML = ""; // Clear loader layers
+
+                if(snapshot.empty) {
+                    container.innerHTML = `<div class="text-center text-gray-400 text-sm mt-10">No messages yet. Say Hi! 👋</div>`;
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const isMe = data.senderId === window.currentUserData.uid;
+                    
+                    // Dynamic template bubble structure assignment variables logic setup
+                    const msgBubble = document.createElement('div');
+                    if (isMe) {
+                        msgBubble.className = "bg-blue-500 text-white p-3 rounded-lg rounded-tr-none self-end max-w-[80%] shadow-sm";
+                    } else {
+                        msgBubble.className = "bg-pink-100 text-gray-800 p-3 rounded-lg rounded-tl-none self-start max-w-[80%] shadow-sm";
+                    }
+                    
+                    msgBubble.innerHTML = `<p>${data.text}</p>`;
+                    container.appendChild(msgBubble);
+                });
+
+                // Scroll to view window to bottom automatically targets
+                container.scrollTop = container.scrollHeight;
+            });
+        };
+
+        // SEND LIVE MESSAGES DATA PAYLOAD PUSH (NEW)
+        window.sendLiveMessage = async () => {
+            const inputField = document.getElementById('msg-input');
+            const messageText = inputField.value.trim();
+
+            if(!messageText || !window.activeChatId) return;
+
+            try {
+                const msgRef = collection(window.db, "Chats", window.activeChatId, "Messages");
+                await addDoc(msgRef, {
+                    senderId: window.currentUserData.uid,
+                    text: messageText,
+                    timestamp: serverTimestamp() // Official global Firebase timestamp
+                });
+
+                inputField.value = ""; // Clear text field parameters trace
+            } catch (err) {
+                console.error("Error sending message payload line: ", err);
+            }
+        };
+
+        // DISCONNECT CHAT LISTENERS ON EXIT
+        window.exi
