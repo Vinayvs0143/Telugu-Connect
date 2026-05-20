@@ -41,7 +41,7 @@
             <h2 class="text-2xl font-bold mb-2 text-gray-800 dark:text-white text-center">Your Profile</h2>
             <div class="flex flex-col items-center mb-6">
                 <div id="setup-pic-preview" class="w-24 h-24 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center flex items-center justify-center overflow-hidden relative">
-                    <span class="text-xs text-gray-500 absolute pointer-events-none">Tap to upload</span>
+                    <span class="text-xs text-gray-500 absolute pointer-events-none">Tap upload</span>
                     <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'setup')" class="absolute inset-0 opacity-0 cursor-pointer">
                 </div>
             </div>
@@ -63,29 +63,27 @@
     </div>
 
     <div id="settings-screen" class="screen hidden flex-col h-full w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto">
-        <div class="bg-white dark:bg-gray-800 p-4 shadow flex items-center gap-4 z-10">
+        <div class="bg-white dark:bg-gray-800 p-4 shadow flex items-center gap-4 z-10 sticky top-0">
             <button onclick="switchScreen('home-screen')" class="text-pink-600 font-bold text-xl">&larr;</button>
-            <h1 class="text-xl font-bold text-gray-800 dark:text-white">Edit Profile</h1>
+            <h1 class="text-xl font-bold text-gray-800 dark:text-white">Settings</h1>
         </div>
         <div class="p-6 flex flex-col items-center">
             <div id="edit-pic-preview" class="w-32 h-32 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center mb-6 flex items-center justify-center overflow-hidden relative shadow-lg">
-                <span class="text-xs text-white bg-black/50 px-2 py-1 rounded absolute pointer-events-none">Change Photo</span>
+                <span class="text-xs text-white bg-black/50 px-2 py-1 rounded absolute pointer-events-none">Change</span>
                 <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'edit')" class="absolute inset-0 opacity-0 cursor-pointer">
             </div>
             <div class="w-full max-w-sm space-y-4">
-                <div>
-                    <label class="text-xs text-gray-500 dark:text-gray-400 font-bold ml-1">Display Name</label>
-                    <input type="text" id="edit-name" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 dark:text-gray-400 font-bold ml-1">City</label>
-                    <input type="text" id="edit-city" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none">
-                </div>
-                <div>
-                    <label class="text-xs text-gray-500 dark:text-gray-400 font-bold ml-1">Bio</label>
-                    <textarea id="edit-bio" rows="3" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none"></textarea>
-                </div>
+                <input type="text" id="edit-name" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none" placeholder="Name">
+                <input type="text" id="edit-city" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none" placeholder="City">
+                <textarea id="edit-bio" rows="3" class="w-full border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none" placeholder="Bio"></textarea>
                 <button onclick="saveEditedProfile()" class="w-full bg-pink-500 text-white font-bold py-3 mt-4 rounded-xl hover:bg-pink-600 shadow-lg transition">Update Profile</button>
+            </div>
+
+            <div class="w-full max-w-sm mt-10 border-t border-gray-200 dark:border-gray-700 pt-6">
+                <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Blocked Users 🚫</h3>
+                <div id="blocked-users-list" class="space-y-3">
+                    <p class="text-sm text-gray-500">Loading...</p>
+                </div>
             </div>
         </div>
     </div>
@@ -107,6 +105,7 @@
             <div class="flex gap-5 items-center">
                 <button onclick="toggleDarkMode()" class="text-xl">🌙</button>
                 <button onclick="openSettings()" class="text-xl">⚙️</button>
+                <button onclick="openChatList()" class="text-gray-600 dark:text-gray-300 font-bold">Chats 💬</button>
             </div>
         </div>
 
@@ -126,6 +125,14 @@
         </div>
     </div>
 
+    <div id="chat-list-screen" class="screen hidden flex-col h-full w-full bg-white dark:bg-gray-900 overflow-y-auto">
+        <div class="bg-[#075e54] text-white p-4 shadow flex items-center gap-4 z-10 sticky top-0">
+            <button onclick="switchScreen('home-screen')" class="font-bold text-xl">&larr;</button>
+            <h1 class="text-xl font-bold">Your Matches 💬</h1>
+        </div>
+        <div id="chat-list-container" class="flex-1 divide-y divide-gray-100 dark:divide-gray-800"></div>
+    </div>
+
     <div id="chat-screen" class="screen hidden flex-col h-full w-full bg-white relative">
         <div class="bg-[#075e54] text-white p-4 shadow-md flex items-center gap-3 z-10">
             <button onclick="exitChat()" class="font-bold text-xl">&larr;</button>
@@ -137,9 +144,7 @@
             <button onclick="blockUser()" class="text-red-400 hover:text-red-300 font-bold text-lg" title="Block User">🚫</button>
         </div>
 
-        <div class="flex-1 p-4 overflow-y-auto chat-bg flex flex-col gap-2" id="chat-messages-container">
-            <div class="text-center text-gray-600 bg-yellow-100/80 mx-auto px-3 py-1 rounded-lg text-xs mt-2 shadow-sm">Messages are end-to-end encrypted.</div>
-        </div>
+        <div class="flex-1 p-4 overflow-y-auto chat-bg flex flex-col gap-2" id="chat-messages-container"></div>
 
         <div class="p-2 bg-[#f0f0f0] flex gap-2 items-center">
             <input type="text" id="msg-input" placeholder="Message" class="flex-1 bg-white rounded-full px-5 py-3 outline-none shadow-sm text-gray-800">
@@ -173,7 +178,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        // IMPORT ADDED: deleteDoc for unblocking
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -187,9 +193,9 @@
 
         const app = initializeApp(firebaseConfig);
         window.auth = getAuth(app);
-        window.provider = new GoogleAuthProvider();
         window.db = getFirestore(app);
         window.storage = getStorage(app);
+        window.provider = new GoogleAuthProvider();
 
         window.currentUserData = null; 
         window.feedProfiles = [];      
@@ -197,57 +203,48 @@
         window.matchedProfileData = null; 
         window.activeChatId = null;
         window.unsubscribeChatListener = null;
-        window.unsubscribeStatusListener = null; // New listener for online status
+        window.unsubscribeStatusListener = null;
         window.tempUploadedPhotoUrl = null; 
+        window.blockedUidList = []; 
 
-        // AUTO-LOGIN & ONLINE STATUS HOOK
         onAuthStateChanged(window.auth, async (user) => {
             if (user) {
-                // Set user Online status in Firestore
                 await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true });
+                
+                const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
+                window.blockedUidList = [];
+                blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
 
-                window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
-                const userRef = doc(window.db, "Users", user.uid);
-                const userSnap = await getDoc(userRef);
-
+                const userSnap = await getDoc(doc(window.db, "Users", user.uid));
                 if (userSnap.exists() && userSnap.data().age) {
-                    window.currentUserData = userSnap.data();
-                    window.currentUserData.uid = user.uid;
+                    window.currentUserData = { ...userSnap.data(), uid: user.uid };
                     window.showToast("Welcome back, " + window.currentUserData.name + "!");
                     switchScreen('home-screen');
                     window.fetchDiscoverFeed();
                 } else {
+                    window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
                     switchScreen('profile-setup-screen');
                     document.getElementById('setup-name').value = user.displayName || "";
                     document.getElementById('setup-pic-preview').style.backgroundImage = `url('${user.photoURL}')`;
                 }
-            } else {
-                switchScreen('login-screen');
-            }
+            } else { switchScreen('login-screen'); }
         });
 
         window.handleGoogleLogin = async () => {
-            try { await signInWithPopup(window.auth, window.provider); } 
-            catch (error) { window.showToast("Login Failed", "error"); switchScreen('login-screen'); }
+            try { await signInWithPopup(window.auth, window.provider); } catch (e) { window.showToast("Login Failed", "error"); }
         };
 
-        // PHOTO UPLOAD (Handles both Setup & Edit screens)
         window.handlePhotoUpload = async (event, source) => {
-            const file = event.target.files[0];
-            if(!file) return;
-            
+            const file = event.target.files[0]; if(!file) return;
             window.showToast("Uploading photo...", "success");
             try {
                 const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
                 await uploadBytes(storageRef, file);
                 window.tempUploadedPhotoUrl = await getDownloadURL(storageRef);
-                
-                const previewId = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
-                document.getElementById(previewId).style.backgroundImage = `url('${window.tempUploadedPhotoUrl}')`;
-                window.showToast("Photo uploaded!", "success");
-            } catch (e) {
-                window.showToast("Upload failed.", "error");
-            }
+                const id = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
+                document.getElementById(id).style.backgroundImage = `url('${window.tempUploadedPhotoUrl}')`;
+                window.showToast("Photo updated!", "success");
+            } catch (e) { window.showToast("Upload failed.", "error"); }
         };
 
         window.saveProfileSetup = async () => {
@@ -257,58 +254,89 @@
             const gender = document.getElementById('setup-gender').value;
             const city = document.getElementById('setup-city').value.trim();
 
-            if (!name || !username || !age || !gender || !city) { window.showToast("Anni fields fill cheyali bro!", "error"); return; }
-            if (age < 18) { window.showToast("Strictly 18+ Only!", "error"); return; }
-
+            if (!name || !username || !age || !gender || !city) { window.showToast("Anni fields required!", "error"); return; }
             const finalPicUrl = window.tempUploadedPhotoUrl || window.currentUserData.photoURL || 'https://via.placeholder.com/150';
 
             try {
-                const profilePayload = {
-                    uid: window.currentUserData.uid, name, username, age, gender, city, 
-                    email: window.currentUserData.email || "", profilePicUrl: finalPicUrl,
-                    bio: "Using Telugu Connect.", online: true
-                };
-                await setDoc(doc(window.db, "Users", window.currentUserData.uid), profilePayload, { merge: true });
-                window.currentUserData = profilePayload;
-                window.showToast("Profile ready!");
-                switchScreen('home-screen');
-                window.fetchDiscoverFeed();
-            } catch (error) { window.showToast("Error saving profile", "error"); }
+                const payload = { uid: window.currentUserData.uid, name, username, age, gender, city, email: window.currentUserData.email||"", profilePicUrl: finalPicUrl, bio: "Using Telugu Connect.", online: true };
+                await setDoc(doc(window.db, "Users", window.currentUserData.uid), payload, { merge: true });
+                window.currentUserData = payload;
+                switchScreen('home-screen'); window.fetchDiscoverFeed();
+            } catch (e) { window.showToast("Error saving profile", "error"); }
         };
- // EDIT PROFILE FUNCTIONS
+
+        // SETTINGS & UNBLOCK LOGIC (NEW)
         window.openSettings = () => {
             document.getElementById('edit-name').value = window.currentUserData.name || '';
             document.getElementById('edit-city').value = window.currentUserData.city || '';
             document.getElementById('edit-bio').value = window.currentUserData.bio || '';
             document.getElementById('edit-pic-preview').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
-            window.tempUploadedPhotoUrl = null; // Reset temp URL
+            window.loadBlockedUsers(); // Load blocks dynamically
             switchScreen('settings-screen');
+        };
+
+        window.loadBlockedUsers = async () => {
+            const container = document.getElementById('blocked-users-list');
+            if (window.blockedUidList.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-400">You haven't blocked anyone yet.</p>`;
+                return;
+            }
+            container.innerHTML = "";
+            for (let targetUid of window.blockedUidList) {
+                const targetSnap = await getDoc(doc(window.db, "Users", targetUid));
+                if (targetSnap.exists()) {
+                    const data = targetSnap.data();
+                    const item = document.createElement('div');
+                    item.className = "flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-xl";
+                    item.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-cover bg-center shadow" style="background-image: url('${data.profilePicUrl}')"></div>
+                            <span class="font-bold text-gray-800 dark:text-white">${data.name}</span>
+                        </div>
+                        <button onclick="unblockUser('${targetUid}')" class="text-xs bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold hover:bg-red-200 transition">Unblock</button>
+                    `;
+                    container.appendChild(item);
+                }
+            }
+        };
+
+        window.unblockUser = async (targetUid) => {
+            try {
+                await deleteDoc(doc(window.db, "Blocks", `${window.currentUserData.uid}_${targetUid}`));
+                window.blockedUidList = window.blockedUidList.filter(id => id !== targetUid);
+                window.showToast("User unblocked!", "success");
+                window.loadBlockedUsers();
+                window.fetchDiscoverFeed();
+            } catch (e) {
+                window.showToast("Failed to unblock", "error");
+            }
         };
 
         window.saveEditedProfile = async () => {
             const name = document.getElementById('edit-name').value.trim();
             const city = document.getElementById('edit-city').value.trim();
             const bio = document.getElementById('edit-bio').value.trim();
-
             if(!name || !city) { window.showToast("Name and City required!", "error"); return; }
             const finalPicUrl = window.tempUploadedPhotoUrl || window.currentUserData.profilePicUrl;
-
             try {
                 const updates = { name, city, bio, profilePicUrl: finalPicUrl };
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), updates, { merge: true });
                 window.currentUserData = { ...window.currentUserData, ...updates };
-                window.showToast("Profile Updated!", "success");
-                switchScreen('home-screen');
-            } catch (error) { window.showToast("Error updating", "error"); }
+                window.showToast("Profile Updated!"); switchScreen('home-screen');
+            } catch (e) { window.showToast("Update failed", "error"); }
         };
 
-        // FEED & MATCHING
         window.fetchDiscoverFeed = async () => {
             const targetGender = window.currentUserData.gender === "Boy" ? "Girl" : "Boy";
             const q = query(collection(window.db, "Users"), where("gender", "==", targetGender));
             const snap = await getDocs(q);
             window.feedProfiles = [];
-            snap.forEach(doc => { if (doc.id !== window.currentUserData.uid) window.feedProfiles.push(doc.data()); });
+            snap.forEach(doc => { 
+                const data = doc.data();
+                if (doc.id !== window.currentUserData.uid && !window.blockedUidList.includes(doc.id)) {
+                    window.feedProfiles.push(data);
+                }
+            });
             window.currentFeedIndex = 0; window.renderCurrentProfile();
         };
 
@@ -321,6 +349,7 @@
             document.getElementById('card-image-bg').style.backgroundImage = `url('${p.profilePicUrl}')`;
             document.getElementById('card-name-age').innerText = `${p.name}, ${p.age}`;
             document.getElementById('card-city').innerText = p.city;
+            document.getElementById('action-buttons-layer').classList.remove('hidden');
         };
 
         window.handleAction = async (actionType) => {
@@ -329,7 +358,11 @@
                 const myUid = window.currentUserData.uid; const targetUid = target.uid;
                 await setDoc(doc(window.db, "Likes", `${myUid}_${targetUid}`), { from: myUid, to: targetUid });
                 const revSnap = await getDoc(doc(window.db, "Likes", `${targetUid}_${myUid}`));
+                
                 if (revSnap.exists()) {
+                    const matchId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${myUid}`;
+                    await setDoc(doc(window.db, "Matches", matchId), { users: [myUid, targetUid], timestamp: Date.now() });
+
                     window.matchedProfileData = target;
                     document.getElementById('match-my-pic').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
                     document.getElementById('match-their-pic').style.backgroundImage = `url('${target.profilePicUrl}')`;
@@ -341,7 +374,52 @@
 
         window.closeMatchOverlay = () => { document.getElementById('match-overlay').classList.add('hidden'); document.getElementById('match-overlay').classList.remove('flex'); };
 
-        // REAL-TIME CHAT & ONLINE STATUS
+        window.openChatList = async () => {
+            switchScreen('chat-list-screen');
+            const container = document.getElementById('chat-list-container');
+            container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">Loading chats...</div>`;
+
+            try {
+                const myUid = window.currentUserData.uid;
+                const q = query(collection(window.db, "Matches"), where("users", "array-contains", myUid));
+                const snap = await getDocs(q);
+
+                if(snap.empty) {
+                    container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">No matches yet. Keep swiping! ⚡</div>`; return;
+                }
+
+                container.innerHTML = ""; 
+                snap.forEach(async (matchDoc) => {
+                    const uids = matchDoc.data().users;
+                    const targetUid = uids.find(id => id !== myUid);
+
+                    if(window.blockedUidList.includes(targetUid)) return;
+
+                    const targetSnap = await getDoc(doc(window.db, "Users", targetUid));
+                    if(targetSnap.exists()) {
+                        const targetData = targetSnap.data();
+                        
+                        const item = document.createElement('div');
+                        item.className = "flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition";
+                        item.onclick = () => window.launchDirectChat(targetData);
+                        item.innerHTML = `
+                            <div class="w-12 h-12 rounded-full bg-gray-200 bg-cover bg-center shadow-sm" style="background-image: url('${targetData.profilePicUrl}')"></div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-800 dark:text-white">${targetData.name}, ${targetData.age}</h3>
+                                <p class="text-xs text-gray-400 dark:text-gray-500">📍 ${targetData.city} • Tap to chat</p>
+                            </div>
+                            <span class="text-xs text-green-500 font-bold">${targetData.online ? '●' : ''}</span>`;
+                        container.appendChild(item);
+                    }
+                });
+            } catch(e) { container.innerHTML = `<div class="p-10 text-center text-red-400 text-sm">Error loading chat entries</div>`; }
+        };
+
+        window.launchDirectChat = (targetProfile) => {
+            window.matchedProfileData = targetProfile;
+            window.goToChatFromMatch();
+        };
+
         window.goToChatFromMatch = () => {
             window.closeMatchOverlay();
             if(window.matchedProfileData) {
@@ -352,7 +430,6 @@
                 const u1 = window.currentUserData.uid; 
                 window.activeChatId = u1 < targetUid ? `${u1}_${targetUid}` : `${targetUid}_${u1}`;
                 
-                // Track Target User's Online Status
                 window.unsubscribeStatusListener = onSnapshot(doc(window.db, "Users", targetUid), (docSnap) => {
                     if(docSnap.exists()){
                         const isOnline = docSnap.data().online;
@@ -361,7 +438,6 @@
                         statusElem.className = isOnline ? 'text-xs text-green-300 font-bold' : 'text-xs text-gray-300';
                     }
                 });
-
                 window.listenToMessages();
             }
             switchScreen('chat-screen');
@@ -371,24 +447,19 @@
             const q = query(collection(window.db, "Chats", window.activeChatId, "Messages"), orderBy("timestamp", "asc"));
             window.unsubscribeChatListener = onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('chat-messages-container');
-                container.innerHTML = `<div class="text-center text-gray-600 bg-yellow-100/80 mx-auto px-3 py-1 rounded-lg text-xs mt-2 shadow-sm">Messages are end-to-end encrypted.</div>`; 
+                container.innerHTML = `<div class="text-center text-gray-600 bg-yellow-100/80 mx-auto px-3 py-1 rounded-lg text-xs mt-2 shadow-sm">Messages are encrypted.</div>`; 
 
                 snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    const isMe = data.senderId === window.currentUserData.uid;
-                    
+                    const data = docSnap.data(); const isMe = data.senderId === window.currentUserData.uid;
                     let timeString = "";
-                    if(data.timestamp) {
-                        const date = data.timestamp.toDate();
-                        timeString = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    }
+                    if(data.timestamp) { timeString = data.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
 
                     const msgBubble = document.createElement('div');
                     if (isMe) {
-                        msgBubble.className = "bg-[#dcf8c6] text-gray-800 p-2 px-3 rounded-lg rounded-tr-none self-end max-w-[80%] shadow-sm relative text-sm";
+                        msgBubble.className = "bg-[#dcf8c6] p-2 px-3 rounded-lg rounded-tr-none self-end max-w-[80%] shadow-sm text-sm";
                         msgBubble.innerHTML = `<span>${data.text}</span><span class="text-[10px] text-gray-500 ml-3 float-right mt-2">${timeString} <span class="text-blue-500">✓✓</span></span>`;
                     } else {
-                        msgBubble.className = "bg-white text-gray-800 p-2 px-3 rounded-lg rounded-tl-none self-start max-w-[80%] shadow-sm relative text-sm";
+                        msgBubble.className = "bg-white p-2 px-3 rounded-lg rounded-tl-none self-start max-w-[80%] shadow-sm text-sm";
                         msgBubble.innerHTML = `<span>${data.text}</span><span class="text-[10px] text-gray-400 ml-3 float-right mt-2">${timeString}</span>`;
                     }
                     container.appendChild(msgBubble);
@@ -398,38 +469,210 @@
         };
 
         window.sendLiveMessage = async () => {
-            const input = document.getElementById('msg-input');
-            const text = input.value.trim();
+            const input = document.getElementById('msg-input'); const text = input.value.trim();
             if(!text || !window.activeChatId) return;
             try {
-                await addDoc(collection(window.db, "Chats", window.activeChatId, "Messages"), {
-                    senderId: window.currentUserData.uid, text: text, timestamp: serverTimestamp() 
-                });
+                await addDoc(collection(window.db, "Chats", window.activeChatId, "Messages"), { senderId: window.currentUserData.uid, text: text, timestamp: serverTimestamp() });
                 input.value = ""; 
-            } catch (err) { window.showToast("Message failed to send", "error"); }
+            } catch (err) { window.showToast("Failed to send", "error"); }
         };
 
-        // BLOCK USER FEATURE
         window.blockUser = async () => {
-            const confirmBlock = confirm("Are you sure you want to block this user?");
-            if(confirmBlock) {
+            if(confirm("Are you sure you want to block this user?")) {
                 try {
-                    // Logic: Add to a 'Blocks' collection
-                    const blockRef = doc(window.db, "Blocks", `${window.currentUserData.uid}_${window.matchedProfileData.uid}`);
-                    await setDoc(blockRef, { blocker: window.currentUserData.uid, blocked: window.matchedProfileData.uid, timestamp: Date.now() });
-                    
+                    const myUid = window.currentUserData.uid;
+                    const targetUid = window.matchedProfileData.uid;
+                    await setDoc(doc(window.db, "Blocks", `${myUid}_${targetUid}`), { blocker: myUid, blocked: targetUid, timestamp: Date.now() });
+                    window.blockedUidList.push(targetUid); 
                     window.showToast("User blocked successfully", "error");
                     window.exitChat();
-                } catch (e) {
-                    window.showToast("Block failed", "error");
+                    window.fetchDiscoverFeed(); 
+                } catch (e) { window.showToast("Failed to unblock", "error");
+            }
+        };
+
+        window.saveEditedProfile = async () => {
+            const name = document.getElementById('edit-name').value.trim();
+            const city = document.getElementById('edit-city').value.trim();
+            const bio = document.getElementById('edit-bio').value.trim();
+            if(!name || !city) { window.showToast("Name and City required!", "error"); return; }
+            const finalPicUrl = window.tempUploadedPhotoUrl || window.currentUserData.profilePicUrl;
+            try {
+                const updates = { name, city, bio, profilePicUrl: finalPicUrl };
+                await setDoc(doc(window.db, "Users", window.currentUserData.uid), updates, { merge: true });
+                window.currentUserData = { ...window.currentUserData, ...updates };
+                window.showToast("Profile Updated!"); switchScreen('home-screen');
+            } catch (e) { window.showToast("Update failed", "error"); }
+        };
+
+        window.fetchDiscoverFeed = async () => {
+            const targetGender = window.currentUserData.gender === "Boy" ? "Girl" : "Boy";
+            const q = query(collection(window.db, "Users"), where("gender", "==", targetGender));
+            const snap = await getDocs(q);
+            window.feedProfiles = [];
+            snap.forEach(doc => { 
+                const data = doc.data();
+                if (doc.id !== window.currentUserData.uid && !window.blockedUidList.includes(doc.id)) {
+                    window.feedProfiles.push(data);
                 }
+            });
+            window.currentFeedIndex = 0; window.renderCurrentProfile();
+        };
+
+        window.renderCurrentProfile = () => {
+            if (window.feedProfiles.length === 0 || window.currentFeedIndex >= window.feedProfiles.length) {
+                document.getElementById('profile-card').innerHTML = `<div class="p-10 text-center flex flex-col justify-center items-center h-full"><h3 class="text-xl font-bold dark:text-white">No Profiles Left! 🌍</h3></div>`;
+                document.getElementById('action-buttons-layer').classList.add('hidden'); return;
+            }
+            const p = window.feedProfiles[window.currentFeedIndex];
+            document.getElementById('card-image-bg').style.backgroundImage = `url('${p.profilePicUrl}')`;
+            document.getElementById('card-name-age').innerText = `${p.name}, ${p.age}`;
+            document.getElementById('card-city').innerText = p.city;
+            document.getElementById('action-buttons-layer').classList.remove('hidden');
+        };
+
+        window.handleAction = async (actionType) => {
+            const target = window.feedProfiles[window.currentFeedIndex];
+            if (actionType === 'like') {
+                const myUid = window.currentUserData.uid; const targetUid = target.uid;
+                await setDoc(doc(window.db, "Likes", `${myUid}_${targetUid}`), { from: myUid, to: targetUid });
+                const revSnap = await getDoc(doc(window.db, "Likes", `${targetUid}_${myUid}`));
+                
+                if (revSnap.exists()) {
+                    const matchId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${myUid}`;
+                    await setDoc(doc(window.db, "Matches", matchId), { users: [myUid, targetUid], timestamp: Date.now() });
+
+                    window.matchedProfileData = target;
+                    document.getElementById('match-my-pic').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
+                    document.getElementById('match-their-pic').style.backgroundImage = `url('${target.profilePicUrl}')`;
+                    document.getElementById('match-overlay').classList.remove('hidden'); document.getElementById('match-overlay').classList.add('flex');
+                }
+            }
+            window.currentFeedIndex++; window.renderCurrentProfile();
+        };
+
+        window.closeMatchOverlay = () => { document.getElementById('match-overlay').classList.add('hidden'); document.getElementById('match-overlay').classList.remove('flex'); };
+
+        window.openChatList = async () => {
+            switchScreen('chat-list-screen');
+            const container = document.getElementById('chat-list-container');
+            container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">Loading chats...</div>`;
+
+            try {
+                const myUid = window.currentUserData.uid;
+                const q = query(collection(window.db, "Matches"), where("users", "array-contains", myUid));
+                const snap = await getDocs(q);
+
+                if(snap.empty) {
+                    container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">No matches yet. Keep swiping! ⚡</div>`; return;
+                }
+
+                container.innerHTML = ""; 
+                snap.forEach(async (matchDoc) => {
+                    const uids = matchDoc.data().users;
+                    const targetUid = uids.find(id => id !== myUid);
+
+                    if(window.blockedUidList.includes(targetUid)) return;
+
+                    const targetSnap = await getDoc(doc(window.db, "Users", targetUid));
+                    if(targetSnap.exists()) {
+                        const targetData = targetSnap.data();
+                        
+                        const item = document.createElement('div');
+                        item.className = "flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition";
+                        item.onclick = () => window.launchDirectChat(targetData);
+                        item.innerHTML = `
+                            <div class="w-12 h-12 rounded-full bg-gray-200 bg-cover bg-center shadow-sm" style="background-image: url('${targetData.profilePicUrl}')"></div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-800 dark:text-white">${targetData.name}, ${targetData.age}</h3>
+                                <p class="text-xs text-gray-400 dark:text-gray-500">📍 ${targetData.city} • Tap to chat</p>
+                            </div>
+                            <span class="text-xs text-green-500 font-bold">${targetData.online ? '●' : ''}</span>`;
+                        container.appendChild(item);
+                    }
+                });
+            } catch(e) { container.innerHTML = `<div class="p-10 text-center text-red-400 text-sm">Error loading chat entries</div>`; }
+        };
+
+        window.launchDirectChat = (targetProfile) => {
+            window.matchedProfileData = targetProfile;
+            window.goToChatFromMatch();
+        };
+
+        window.goToChatFromMatch = () => {
+            window.closeMatchOverlay();
+            if(window.matchedProfileData) {
+                const targetUid = window.matchedProfileData.uid;
+                document.getElementById('chat-header-name').innerText = window.matchedProfileData.name;
+                document.getElementById('chat-header-pic').style.backgroundImage = `url('${window.matchedProfileData.profilePicUrl}')`;
+                
+                const u1 = window.currentUserData.uid; 
+                window.activeChatId = u1 < targetUid ? `${u1}_${targetUid}` : `${targetUid}_${u1}`;
+                
+                window.unsubscribeStatusListener = onSnapshot(doc(window.db, "Users", targetUid), (docSnap) => {
+                    if(docSnap.exists()){
+                        const isOnline = docSnap.data().online;
+                        const statusElem = document.getElementById('chat-header-status');
+                        statusElem.innerText = isOnline ? 'Online' : 'Offline';
+                        statusElem.className = isOnline ? 'text-xs text-green-300 font-bold' : 'text-xs text-gray-300';
+                    }
+                });
+                window.listenToMessages();
+            }
+            switchScreen('chat-screen');
+        };
+
+        window.listenToMessages = () => {
+            const q = query(collection(window.db, "Chats", window.activeChatId, "Messages"), orderBy("timestamp", "asc"));
+            window.unsubscribeChatListener = onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('chat-messages-container');
+                container.innerHTML = `<div class="text-center text-gray-600 bg-yellow-100/80 mx-auto px-3 py-1 rounded-lg text-xs mt-2 shadow-sm">Messages are encrypted.</div>`; 
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data(); const isMe = data.senderId === window.currentUserData.uid;
+                    let timeString = "";
+                    if(data.timestamp) { timeString = data.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
+
+                    const msgBubble = document.createElement('div');
+                    if (isMe) {
+                        msgBubble.className = "bg-[#dcf8c6] p-2 px-3 rounded-lg rounded-tr-none self-end max-w-[80%] shadow-sm text-sm";
+                        msgBubble.innerHTML = `<span>${data.text}</span><span class="text-[10px] text-gray-500 ml-3 float-right mt-2">${timeString} <span class="text-blue-500">✓✓</span></span>`;
+                    } else {
+                        msgBubble.className = "bg-white p-2 px-3 rounded-lg rounded-tl-none self-start max-w-[80%] shadow-sm text-sm";
+                        msgBubble.innerHTML = `<span>${data.text}</span><span class="text-[10px] text-gray-400 ml-3 float-right mt-2">${timeString}</span>`;
+                    }
+                    container.appendChild(msgBubble);
+                });
+                container.scrollTop = container.scrollHeight;
+            });
+        };
+window.sendLiveMessage = async () => {
+            const input = document.getElementById('msg-input'); const text = input.value.trim();
+            if(!text || !window.activeChatId) return;
+            try {
+                await addDoc(collection(window.db, "Chats", window.activeChatId, "Messages"), { senderId: window.currentUserData.uid, text: text, timestamp: serverTimestamp() });
+                input.value = ""; 
+            } catch (err) { window.showToast("Failed to send", "error"); }
+        };
+
+        window.blockUser = async () => {
+            if(confirm("Are you sure you want to block this user?")) {
+                try {
+                    const myUid = window.currentUserData.uid;
+                    const targetUid = window.matchedProfileData.uid;
+                    await setDoc(doc(window.db, "Blocks", `${myUid}_${targetUid}`), { blocker: myUid, blocked: targetUid, timestamp: Date.now() });
+                    window.blockedUidList.push(targetUid); 
+                    window.showToast("User blocked successfully", "error");
+                    window.exitChat();
+                    window.fetchDiscoverFeed(); 
+                } catch (e) { window.showToast("Block failed", "error"); }
             }
         };
 
         window.exitChat = () => { 
             if(window.unsubscribeChatListener) window.unsubscribeChatListener(); 
             if(window.unsubscribeStatusListener) window.unsubscribeStatusListener();
-            switchScreen('home-screen'); 
+            window.openChatList(); 
         };
     </script>
 </body>
