@@ -55,14 +55,12 @@
     <div id="profile-setup-screen" class="screen hidden flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 overflow-y-auto absolute inset-0 z-40">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-sm my-auto mt-10">
             <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white text-center">Your Profile</h2>
-            
             <div class="flex flex-col items-center mb-6">
                 <div id="setup-pic-preview" class="w-28 h-28 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center flex items-center justify-center overflow-hidden relative shadow-md">
                     <span class="text-xs text-gray-800 font-bold bg-white/80 px-2 py-1 rounded-md z-0 pointer-events-none">Choose Photo</span>
                     <input type="file" accept="image/*" onchange="handleInstantPhotoPreview(event, 'setup')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                 </div>
             </div>
-
             <div class="space-y-4">
                 <input type="text" id="setup-name" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Display Name">
                 <input type="text" id="setup-username" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Username (no spaces)">
@@ -90,25 +88,22 @@
                 <span class="text-xs text-gray-800 font-bold bg-white/80 px-2 py-1 rounded-md z-0 pointer-events-none">Change Photo</span>
                 <input type="file" accept="image/*" onchange="handleInstantPhotoPreview(event, 'edit')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
             </div>
-            
             <div class="w-full max-w-sm space-y-4">
                 <input type="text" id="edit-name" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Name">
                 <input type="text" id="edit-city" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="City">
                 <textarea id="edit-bio" rows="3" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Bio"></textarea>
                 <button onclick="saveEditedProfile()" class="w-full bg-pink-500 text-white font-bold py-4 mt-4 rounded-xl hover:bg-pink-600 shadow-lg active:scale-95">Update Profile</button>
             </div>
-            
             <div class="w-full max-w-sm mt-10 border-t border-gray-200 dark:border-gray-700 pt-6">
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Blocked Users 🚫</h3>
                 <div id="blocked-users-list" class="space-y-3"><p class="text-sm text-gray-500">Loading...</p></div>
             </div>
-            
             <button onclick="logoutApp()" class="w-full max-w-sm border-2 border-gray-300 text-gray-700 dark:text-gray-300 font-bold py-3 mt-10 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-800 active:scale-95 transition">Logout</button>
             <button onclick="deleteAccount()" class="w-full max-w-sm bg-red-50 border-2 border-red-500 text-red-500 font-bold py-3 mt-4 rounded-xl hover:bg-red-500 hover:text-white dark:bg-transparent dark:hover:bg-red-600 transition active:scale-95">Delete Account 🗑️</button>
         </div>
     </div>
 
-<div id="home-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 relative transition-colors absolute inset-0 z-30">
+    <div id="home-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 relative transition-colors absolute inset-0 z-30">
         <div id="match-overlay" class="absolute inset-0 bg-black/95 z-50 hidden flex-col justify-center items-center p-6 text-center backdrop-blur-sm">
             <h1 class="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400 mb-2 animate-pulse">Match! 💖</h1>
             <p class="text-white text-lg mb-8">You both liked each other.</p>
@@ -117,7 +112,7 @@
                 <div id="match-their-pic" class="w-28 h-28 rounded-full border-4 border-white bg-cover bg-center shadow-2xl"></div>
             </div>
             <button onclick="goToChatFromMatch()" class="bg-gradient-to-r from-pink-500 to-orange-400 text-white font-bold py-4 px-10 rounded-full w-full max-w-xs mb-4 shadow-xl active:scale-95 transition transform">Chat Now 💬</button>
-            <button onclick="closeMatchOverlay()" class="text-gray-300 font-medium">Keep Swiping</button>
+            <button onclick="closeMatchOverlay()" class="text-gray-300 font-medium active:scale-95 transition">Keep Swiping</button>
         </div>
 
         <div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex justify-between items-center z-10">
@@ -130,8 +125,7 @@
         </div>
 
         <div class="flex-1 p-4 flex justify-center items-center relative overflow-hidden" id="feed-container">
-            <div id="profile-card" class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden relative">
-            </div>
+            <div id="profile-card" class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden relative"></div>
         </div>
 
         <div class="p-6 flex justify-center gap-8 mb-4 z-10" id="action-buttons-layer">
@@ -140,7 +134,7 @@
         </div>
     </div>
 
-    <div id="chat-list-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
+<div id="chat-list-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
         <div class="bg-[#075e54] text-white p-4 shadow-md flex items-center gap-4 z-10 sticky top-0">
             <button onclick="switchScreen('home-screen')" class="font-bold text-2xl active:scale-90 transition">&larr;</button>
             <h1 class="text-xl font-bold">Your Matches</h1>
@@ -158,15 +152,12 @@
             </div>
             <button onclick="blockUser()" class="text-red-400 hover:text-red-300 font-bold text-xl" title="Block User">🚫</button>
         </div>
-
         <div class="flex-1 p-4 overflow-y-auto chat-bg flex flex-col gap-2" id="chat-messages-container"></div>
-
         <div class="p-3 bg-[#f0f0f0] flex gap-2 items-center border-t border-gray-300 w-full z-50 shrink-0 pb-6">
             <input type="text" id="msg-input" oninput="handleTyping()" placeholder="Type a message..." class="flex-1 bg-white rounded-full px-5 py-3.5 outline-none shadow-sm text-gray-800 focus:ring-2 focus:ring-[#128C7E]">
             <button onclick="sendLiveMessage()" class="bg-[#128C7E] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] active:scale-90 shrink-0">➤</button>
         </div>
     </div>
-
 <script>
         function switchScreen(targetScreenId) {
             document.querySelectorAll('.screen').forEach(s => { s.classList.add('hidden'); s.classList.remove('flex'); });
@@ -188,7 +179,6 @@
             localStorage.setItem('tc_theme', isDark ? 'dark' : 'light'); 
         }
         
-        // Timeout Fail-Safe: If stuck on loading for >5s, push to login
         setTimeout(() => {
             const loading = document.getElementById('loading-screen');
             if(!loading.classList.contains('hidden')) {
@@ -222,12 +212,10 @@
         window.pendingPhotoFile = null; window.blockedUidList = []; window.swipedUidList = [];
         let typingTimeout = null;
 
-        // BULLETPROOF TRY-CATCH SESSION HANDLER
         onAuthStateChanged(window.auth, async (user) => {
             try {
                 if (user) {
                     const userSnap = await getDoc(doc(window.db, "Users", user.uid));
-                    
                     if(!userSnap.exists() || !userSnap.data().age) {
                         window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
                         switchScreen('profile-setup-screen');
@@ -235,9 +223,7 @@
                         if(user.photoURL) document.getElementById('setup-pic-preview').style.backgroundImage = `url('${user.photoURL}')`;
                         return;
                     }
-
                     await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true });
-                    
                     const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
                     window.blockedUidList = []; blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
 
@@ -247,23 +233,11 @@
                     window.currentUserData = { ...userSnap.data(), uid: user.uid };
                     window.showToast("Welcome back, " + window.currentUserData.name + "!");
                     switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
-                } else { 
-                    switchScreen('login-screen'); 
-                }
-            } catch (error) {
-                alert("🔥 FIREBASE INTERNAL ERROR: " + error.message);
-                switchScreen('login-screen');
-            }
+                } else { switchScreen('login-screen'); }
+            } catch (error) { alert("🔥 FIREBASE INTERNAL ERROR: " + error.message); switchScreen('login-screen'); }
         });
 
-        window.handleGoogleLogin = async () => { 
-            try { 
-                await signInWithPopup(window.auth, window.provider); 
-            } catch (e) { 
-                alert("🔑 GOOGLE AUTH DIALOG ERROR: " + e.message);
-            } 
-        };
-        
+        window.handleGoogleLogin = async () => { try { await signInWithPopup(window.auth, window.provider); } catch (e) { alert("🔑 GOOGLE AUTH DIALOG ERROR: " + e.message); } };
         window.logoutApp = async () => { await signOut(window.auth); window.showToast("Logged out!"); switchScreen('login-screen'); };
 
         window.deleteAccount = async () => {
@@ -285,8 +259,7 @@ window.handleInstantPhotoPreview = (event, source) => {
             reader.onload = (e) => {
                 const id = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
                 document.getElementById(id).style.backgroundImage = `url('${e.target.result}')`;
-                window.pendingPhotoFile = file; 
-                window.showToast("Photo selected!", "success");
+                window.pendingPhotoFile = file; window.showToast("Photo selected!", "success");
             };
             reader.readAsDataURL(file);
         };
@@ -296,8 +269,7 @@ window.handleInstantPhotoPreview = (event, source) => {
             const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
             await uploadBytes(storageRef, window.pendingPhotoFile);
             const url = await getDownloadURL(storageRef);
-            window.pendingPhotoFile = null;
-            return url;
+            window.pendingPhotoFile = null; return url;
         };
 
         window.saveProfileSetup = async () => {
@@ -306,7 +278,6 @@ window.handleInstantPhotoPreview = (event, source) => {
             const age = parseInt(document.getElementById('setup-age').value);
             const gender = document.getElementById('setup-gender').value;
             const city = document.getElementById('setup-city').value.trim();
-
             if (!name || !username || !age || !gender || !city) { window.showToast("All fields required!", "error"); return; }
             try {
                 const finalPicUrl = await uploadPendingPhoto();
@@ -317,13 +288,12 @@ window.handleInstantPhotoPreview = (event, source) => {
             } catch (e) { alert("Save Profile Failed: " + e.message); }
         };
 
-        window.openSettings = () => {
+window.openSettings = () => {
             document.getElementById('edit-name').value = window.currentUserData.name || '';
             document.getElementById('edit-city').value = window.currentUserData.city || '';
             document.getElementById('edit-bio').value = window.currentUserData.bio || '';
             document.getElementById('edit-pic-preview').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
-            window.pendingPhotoFile = null;
-            window.loadBlockedUsers(); switchScreen('settings-screen');
+            window.pendingPhotoFile = null; window.loadBlockedUsers(); switchScreen('settings-screen');
         };
 
         window.saveEditedProfile = async () => {
@@ -340,15 +310,14 @@ window.handleInstantPhotoPreview = (event, source) => {
             } catch (e) { alert("Update failed: " + e.message); }
         };
 
-window.loadBlockedUsers = async () => {
+        window.loadBlockedUsers = async () => {
             const container = document.getElementById('blocked-users-list');
             if (window.blockedUidList.length === 0) { container.innerHTML = `<p class="text-sm text-gray-400">No blocks.</p>`; return; }
             container.innerHTML = "";
             for (let targetUid of window.blockedUidList) {
                 const targetSnap = await getDoc(doc(window.db, "Users", targetUid));
                 if (targetSnap.exists()) {
-                    const data = targetSnap.data();
-                    const item = document.createElement('div');
+                    const data = targetSnap.data(); const item = document.createElement('div');
                     item.className = "flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-xl";
                     item.innerHTML = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-cover bg-center shadow" style="background-image: url('${data.profilePicUrl}')"></div><span class="font-bold text-gray-800 dark:text-white">${data.name}</span></div><button onclick="unblockUser('${targetUid}')" class="text-xs bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold">Unblock</button>`;
                     container.appendChild(item);
@@ -368,12 +337,9 @@ window.loadBlockedUsers = async () => {
             try {
                 const targetGender = window.currentUserData.gender === "Boy" ? "Girl" : "Boy";
                 const q = query(collection(window.db, "Users"), where("gender", "==", targetGender));
-                const snap = await getDocs(q);
-                window.feedProfiles = [];
+                const snap = await getDocs(q); window.feedProfiles = [];
                 snap.forEach(doc => { 
-                    if (doc.id !== window.currentUserData.uid && !window.blockedUidList.includes(doc.id) && !window.swipedUidList.includes(doc.id)) { 
-                        window.feedProfiles.push(doc.data()); 
-                    }
+                    if (doc.id !== window.currentUserData.uid && !window.blockedUidList.includes(doc.id) && !window.swipedUidList.includes(doc.id)) { window.feedProfiles.push(doc.data()); }
                 });
                 window.currentFeedIndex = 0; window.renderCurrentProfile();
             } catch (err) { console.error(err); }
@@ -382,13 +348,11 @@ window.loadBlockedUsers = async () => {
         window.renderCurrentProfile = () => {
             const card = document.getElementById('profile-card');
             card.style.transform = `translateX(0px) rotate(0deg)`; card.style.opacity = 1;
-
             if (window.feedProfiles.length === 0 || window.currentFeedIndex >= window.feedProfiles.length) {
                 card.innerHTML = `<div class="p-10 text-center flex flex-col justify-center items-center h-[450px]"><h3 class="text-xl font-bold dark:text-white">No Profiles Left! 🌍</h3></div>`;
                 document.getElementById('action-buttons-layer').classList.add('hidden'); return;
             }
             const p = window.feedProfiles[window.currentFeedIndex];
-            
             card.innerHTML = `
                 <div id="card-image-bg" class="h-[450px] bg-cover bg-center flex items-center justify-center text-gray-500 bg-gray-200 select-none relative" style="background-image: url('${p.profilePicUrl}')">
                     <div id="stamp-like" class="absolute top-12 left-6 border-4 border-green-500 text-green-500 font-extrabold text-4xl px-3 py-1 rounded-xl transform -rotate-12 opacity-0 z-50 pointer-events-none tracking-widest bg-white/20">LIKE</div>
@@ -404,16 +368,10 @@ window.loadBlockedUsers = async () => {
 function setupSwipeListeners() {
             const card = document.getElementById('profile-card');
             let startX = 0, currentX = 0, isDragging = false;
-            
-            card.addEventListener('touchstart', (e) => {
-                startX = e.touches[0].clientX; isDragging = true; card.style.transition = 'none';
-            });
+            card.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; isDragging = true; card.style.transition = 'none'; });
             card.addEventListener('touchmove', (e) => {
-                if(!isDragging) return;
-                currentX = e.touches[0].clientX; const deltaX = currentX - startX;
-                card.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.03}deg)`; 
-                card.style.opacity = Math.max(1 - Math.abs(deltaX)/500, 0.5); 
-                
+                if(!isDragging) return; currentX = e.touches[0].clientX; const deltaX = currentX - startX;
+                card.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.03}deg)`; card.style.opacity = Math.max(1 - Math.abs(deltaX)/500, 0.5); 
                 let stampLike = document.getElementById('stamp-like'); let stampNope = document.getElementById('stamp-nope');
                 if(stampLike && stampNope) {
                     if(deltaX > 0) { stampLike.style.opacity = Math.min(deltaX / 100, 1); stampNope.style.opacity = 0; } 
@@ -423,14 +381,9 @@ function setupSwipeListeners() {
             card.addEventListener('touchend', (e) => {
                 if(!isDragging) return; isDragging = false;
                 const deltaX = currentX - startX; card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-                
-                if(deltaX > 100) {
-                    card.style.transform = `translateX(1000px) rotate(30deg)`; card.style.opacity = 0;
-                    setTimeout(() => window.handleAction('like'), 300);
-                } else if (deltaX < -100) {
-                    card.style.transform = `translateX(-1000px) rotate(-30deg)`; card.style.opacity = 0;
-                    setTimeout(() => window.handleAction('pass'), 300);
-                } else {
+                if(deltaX > 100) { card.style.transform = `translateX(1000px) rotate(30deg)`; card.style.opacity = 0; setTimeout(() => window.handleAction('like'), 300); } 
+                else if (deltaX < -100) { card.style.transform = `translateX(-1000px) rotate(-30deg)`; card.style.opacity = 0; setTimeout(() => window.handleAction('pass'), 300); } 
+                else {
                     card.style.transform = `translateX(0px) rotate(0deg)`; card.style.opacity = 1;
                     if(document.getElementById('stamp-like')) document.getElementById('stamp-like').style.opacity = 0;
                     if(document.getElementById('stamp-nope')) document.getElementById('stamp-nope').style.opacity = 0;
@@ -441,16 +394,12 @@ function setupSwipeListeners() {
         window.handleAction = async (actionType) => {
             const target = window.feedProfiles[window.currentFeedIndex];
             const card = document.getElementById('profile-card');
-
             if (card.style.transform === 'translateX(0px) rotate(0deg)' || card.style.transform === '') {
                 card.style.transition = 'transform 0.3s ease, opacity 0.3s ease'; card.style.opacity = 0;
-                if(actionType === 'like') card.style.transform = `translateX(1000px) rotate(30deg)`;
-                else card.style.transform = `translateX(-1000px) rotate(-30deg)`;
+                if(actionType === 'like') card.style.transform = `translateX(1000px) rotate(30deg)`; else card.style.transform = `translateX(-1000px) rotate(-30deg)`;
             }
-
             const myUid = window.currentUserData.uid; const targetUid = target.uid;
             window.swipedUidList.push(targetUid); 
-
             await setDoc(doc(window.db, "Likes", `${myUid}_${targetUid}`), { from: myUid, to: targetUid, type: actionType });
 
             if (actionType === 'like') {
@@ -461,12 +410,16 @@ function setupSwipeListeners() {
                     window.matchedProfileData = target;
                     document.getElementById('match-my-pic').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
                     document.getElementById('match-their-pic').style.backgroundImage = `url('${target.profilePicUrl}')`;
-                    setTimeout(() => {
-                        document.getElementById('match-overlay').classList.remove('hidden'); document.getElementById('match-overlay').classList.add('flex');
-                    }, 300);
+                    setTimeout(() => { document.getElementById('match-overlay').classList.remove('hidden'); document.getElementById('match-overlay').classList.add('flex'); }, 300);
                 }
             }
             setTimeout(() => { window.currentFeedIndex++; window.renderCurrentProfile(); }, 300);
+        };
+
+  // FIXED: The missing close match overlay function!
+        window.closeMatchOverlay = () => {
+            document.getElementById('match-overlay').classList.add('hidden');
+            document.getElementById('match-overlay').classList.remove('flex');
         };
 
         window.openChatList = async () => {
@@ -476,17 +429,14 @@ function setupSwipeListeners() {
             try {
                 const myUid = window.currentUserData.uid;
                 const snap = await getDocs(query(collection(window.db, "Matches"), where("users", "array-contains", myUid)));
-                
                 if(snap.empty) { container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">No matches yet. Keep swiping! ⚡</div>`; return; }
                 container.innerHTML = ""; 
                 snap.forEach(async (matchDoc) => {
                     const uids = matchDoc.data().users; const targetUid = uids.find(id => id !== myUid);
                     if(window.blockedUidList.includes(targetUid)) return;
-                    
                     const targetSnap = await getDoc(doc(window.db, "Users", targetUid));
                     if(targetSnap.exists()) {
-                        const targetData = targetSnap.data();
-                        const item = document.createElement('div');
+                        const targetData = targetSnap.data(); const item = document.createElement('div');
                         item.className = "flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-b border-gray-100 dark:border-gray-800";
                         item.onclick = () => window.launchDirectChat(targetData);
                         item.innerHTML = `<div class="w-14 h-14 rounded-full bg-gray-200 bg-cover bg-center relative" style="background-image: url('${targetData.profilePicUrl}')">
@@ -498,7 +448,7 @@ function setupSwipeListeners() {
             } catch(e) { container.innerHTML = `<div class="p-10 text-center text-red-400 text-sm">Error loading.</div>`; }
         };
 
-window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targetProfile; window.goToChatFromMatch(); };
+        window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targetProfile; window.goToChatFromMatch(); };
 
         window.goToChatFromMatch = () => {
             window.closeMatchOverlay();
@@ -506,9 +456,7 @@ window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targe
                 const targetUid = window.matchedProfileData.uid;
                 document.getElementById('chat-header-name').innerText = window.matchedProfileData.name;
                 document.getElementById('chat-header-pic').style.backgroundImage = `url('${window.matchedProfileData.profilePicUrl}')`;
-                
-                const u1 = window.currentUserData.uid; 
-                window.activeChatId = u1 < targetUid ? `${u1}_${targetUid}` : `${targetUid}_${u1}`;
+                const u1 = window.currentUserData.uid; window.activeChatId = u1 < targetUid ? `${u1}_${targetUid}` : `${targetUid}_${u1}`;
                 
                 window.unsubscribeStatusListener = onSnapshot(doc(window.db, "Users", targetUid), (docSnap) => {
                     if(docSnap.exists()){
@@ -517,7 +465,6 @@ window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targe
                         document.getElementById('chat-header-status').className = isOnline ? 'text-xs text-green-300 font-bold' : 'text-xs text-gray-300 font-medium h-4';
                     }
                 });
-
                 window.unsubscribeTypingListener = onSnapshot(doc(window.db, "Chats", window.activeChatId), (docSnap) => {
                     if(docSnap.exists()) {
                         const isTyping = docSnap.data()[`typing_${targetUid}`];
@@ -544,15 +491,11 @@ window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targe
 
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data(); const isMe = data.senderId === window.currentUserData.uid;
-                    let timeString = "";
-                    if(data.timestamp) { timeString = data.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
-
+                    let timeString = ""; if(data.timestamp) { timeString = data.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
                     if(!isMe && data.status !== 'read') { updateDoc(docSnap.ref, { status: 'read' }); }
-
                     let ticks = '<span class="text-gray-400 text-[10px]">✓</span>';
                     if (data.status === 'read') { ticks = '<span class="text-blue-500 text-xs font-bold shadow-sm">✓✓</span>'; } 
                     else if (data.status === 'sent') { ticks = '<span class="text-gray-500 text-xs font-bold">✓✓</span>'; }
-
                     const msgBubble = document.createElement('div');
                     if (isMe) {
                         msgBubble.className = "bg-[#dcf8c6] p-2 px-3 rounded-xl rounded-tr-none self-end max-w-[85%] shadow-sm text-sm";
@@ -571,9 +514,7 @@ window.handleTyping = async () => {
             if(!window.activeChatId) return;
             await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: true }, { merge: true });
             clearTimeout(typingTimeout);
-            typingTimeout = setTimeout(async () => {
-                await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: false }, { merge: true });
-            }, 1500);
+            typingTimeout = setTimeout(async () => { await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: false }, { merge: true }); }, 1500);
         };
 
         window.sendLiveMessage = async () => {
@@ -581,8 +522,7 @@ window.handleTyping = async () => {
             if(!text || !window.activeChatId) return;
             try {
                 await addDoc(collection(window.db, "Chats", window.activeChatId, "Messages"), { senderId: window.currentUserData.uid, text: text, timestamp: serverTimestamp(), status: 'sent' });
-                input.value = ""; 
-                await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: false }, { merge: true });
+                input.value = ""; await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: false }, { merge: true });
             } catch (err) { window.showToast("Failed to send"); }
         };
 
