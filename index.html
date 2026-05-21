@@ -184,7 +184,7 @@
     </script>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
@@ -207,12 +207,48 @@
         window.pendingPhotoFile = null; window.blockedUidList = []; window.swipedUidList = [];
         let typingTimeout = null;
 
- // FIXED AUTH LOGIC WITH TRY-CATCH
+         // FIX: Asalu error ento screen meeda Popup avvadaniki Alert add chesanu
         onAuthStateChanged(window.auth, async (user) => {
             try {
                 if (user) {
-                    // Update Online Status
+                    const userSnap = await getDoc(doc(window.db, "Users", user.uid));
+                    if(!userSnap.exists()) {
+                        window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
+                        switchScreen('profile-setup-screen');
+                        document.getElementById('setup-name').value = user.displayName || "";
+                        if(user.photoURL) document.getElementById('setup-pic-preview').style.backgroundImage = `url('${user.photoURL}')`;
+                        return;
+                    }
                     await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true });
+                    const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
+                    window.blockedUidList = []; blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
+                    const swipeSnap = await getDocs(query(collection(window.db, "Likes"), where("from", "==", user.uid)));
+                    window.swipedUidList = []; swipeSnap.forEach(d => window.swipedUidList.push(d.data().to));
+
+                    if (userSnap.exists() && userSnap.data().age) {
+                        window.currentUserData = { ...userSnap.data(), uid: user.uid };
+                        window.showToast("Welcome back, " + window.currentUserData.name + "!");
+                        switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
+                    }
+                } else { switchScreen('login-screen'); }
+            } catch (error) {
+                // EKKADA ERROR VASTHUNDO SCREEN MEEDA CHUPISTHUNDI
+                alert("🔥 FIREBASE ERROR: " + error.message);
+                window.showToast("Error: " + error.message, "error");
+                switchScreen('login-screen');
+            }
+        });
+
+        window.handleGoogleLogin = async () => { 
+            try { 
+                await signInWithPopup(window.auth, window.provider); 
+            } catch (error) { 
+                // LOGIN FAILED AITHE REASON ENTO CHUPISTHUNDI
+                alert("🔑 LOGIN ERROR: " + error.message);
+                window.showToast("Login Failed", "error"); 
+            } 
+        };
+
                     
                     const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
                     window.blockedUidList = []; blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
