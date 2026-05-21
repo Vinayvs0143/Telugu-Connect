@@ -10,7 +10,7 @@
     
     <script>
         window.onerror = function(msg, url, lineNo, columnNo, error) {
-            alert("❌ CRITICAL SCRIPT ERROR: " + msg + "\nLine: " + lineNo);
+            console.error("❌ GLOBAL SCRIPT ERROR: " + msg + "\nLine: " + lineNo);
             return false;
         };
     </script>
@@ -23,7 +23,7 @@
         }
     </script>
     <style>
-        /* Anti-Copy Text Protection */
+        /* Anti-Copy Protection Lock */
         body { 
             font-family: sans-serif; 
             -webkit-tap-highlight-color: transparent; 
@@ -39,6 +39,7 @@
         .dark .chat-bg { background-color: #0b141a; opacity: 0.95; }
         @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
         .toast-animate { animation: slideDown 0.4s ease forwards; }
+        .interest-cb:checked + label { background-color: #ec4899; color: white; border-color: #ec4899; }
         #profile-card { touch-action: none; will-change: transform, opacity; transition: transform 0.3s ease, opacity 0.3s ease; }
     </style>
 </head>
@@ -51,7 +52,7 @@
         <p class="text-white text-sm font-medium tracking-widest mt-2">CONNECTING...</p>
     </div>
 
-    <div id="login-screen" class="screen hidden flex flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-40 overflow-y-auto">
+    <div id="login-screen" class="screen hidden flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-40 overflow-y-auto">
         <h1 class="text-5xl font-extrabold text-white mb-2 drop-shadow-md mt-10">Telugu Connect</h1>
         <p class="text-white mb-8 text-center font-medium">Meet Telugu youths around you!</p>
         <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm text-center mb-10">
@@ -189,44 +190,12 @@
             <button onclick="sendLiveMessage()" class="bg-[#128C7E] dark:bg-[#00a884] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] active:scale-90 shrink-0 transition-colors">➤</button>
         </div>
     </div>
-
-    <script>
-        function switchScreen(targetScreenId) {
-            document.querySelectorAll('.screen').forEach(s => { s.classList.add('hidden'); s.classList.remove('flex'); });
-            document.getElementById(targetScreenId).classList.remove('hidden');
-            document.getElementById(targetScreenId).classList.add('flex');
-        }
-
-        window.showToast = (msg, type = 'success') => {
-            const toast = document.getElementById('toast-msg');
-            toast.innerText = msg;
-            toast.className = `toast-animate fixed top-[40px] left-1/2 transform -translate-x-1/2 z-[999] px-6 py-3 rounded-full text-white font-bold shadow-2xl text-center min-w-[250px] ${type === 'error' ? 'bg-red-500' : 'bg-gray-900'}`;
-            toast.classList.remove('hidden');
-            setTimeout(() => { toast.classList.add('hidden'); }, 3000);
-        }
-
-        window.toggleDarkMode = () => { 
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
-            localStorage.setItem('tc_theme', isDark ? 'dark' : 'light'); 
-        }
-        
-        let isAuthResolved = false;
-        setTimeout(() => {
-            if(!isAuthResolved) {
-                const loading = document.getElementById('loading-screen');
-                if(!loading.classList.contains('hidden')) {
-                    switchScreen('login-screen');
-                }
-            }
-        }, 5000);
-    </script>
-
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, deleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
+        // STABLE STACK DEPLOYMENT: Using Ultra Stable 10.12.0 core pipeline
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, deleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC2vOFa2aMwQFa2KEej0ZuXVFQUHUQTZEc",
@@ -248,80 +217,32 @@
         window.unsubscribeChatListener = null; window.unsubscribeStatusListener = null; window.unsubscribeTypingListener = null;
         window.pendingPhotoFile = null; window.blockedUidList = []; window.swipedUidList = [];
         window.chatListUnsubscribers = [];
-        
         let typingTimeout = null;
         let targetUserOnlineStatus = false;
 
-    // BULLETPROOF SESSION HANDLER WITH ROBUST FALLBACKS
-        onAuthStateChanged(window.auth, async (user) => {
-            isAuthResolved = true; 
-            try {
-                if (user) {
-                    const userSnap = await getDoc(doc(window.db, "Users", user.uid));
-                    
-                    // Route immediately to profile setup if account info doesn't exist yet
-                    if(!userSnap.exists() || !userSnap.data().age) {
-                        window.currentUserData = { uid: user.uid, name: user.displayName||"", email: user.email||"", profilePicUrl: user.photoURL||"" };
-                        switchScreen('profile-setup-screen');
-                        document.getElementById('setup-name').value = window.currentUserData.name;
-                        if(window.currentUserData.profilePicUrl) document.getElementById('setup-pic-preview').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
-                        return;
-                    }
-
-                    window.currentUserData = { ...userSnap.data(), uid: user.uid };
-
-                    // Safe Background Requests: If these fail, they won't block the screen switch anymore!
-                    try { await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true }); } catch(e) {}
-                    try {
-                        const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
-                        window.blockedUidList = []; blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
-                    } catch(e) { window.blockedUidList = []; }
-                    try {
-                        const swipeSnap = await getDocs(query(collection(window.db, "Likes"), where("from", "==", user.uid)));
-                        window.swipedUidList = []; swipeSnap.forEach(d => window.swipedUidList.push(d.data().to));
-                    } catch(e) { window.swipedUidList = []; }
-
-                    window.showToast("Welcome back, " + window.currentUserData.name + "!");
-                    switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
-                } else { 
-                    switchScreen('login-screen'); 
-                }
-            } catch (error) { 
-                alert("🚨 CRITICAL AUTH FLOW ERROR: " + error.message);
-                switchScreen('login-screen'); 
-            }
-        });
-
-        // RE-ENGINEERED ROBUST LOGINS
-        window.handleGoogleLogin = async () => { 
-            try { await signInWithPopup(window.auth, window.provider); } 
-            catch (e) { alert("🔑 GOOGLE AUTH ERROR: " + e.message); } 
-        };
+        // BINDING HANDLERS IMMEDIATELY TO WINDOW TO RESOLVE REFERENCE ERRORS ON CLICKS
+        window.handleGoogleLogin = async () => { try { await signInWithPopup(window.auth, window.provider); } catch (e) { window.showToast("Google Auth Failed", "error"); } };
         
         window.handleEmailLogin = async () => {
             const e = document.getElementById('auth-email').value.trim(); const p = document.getElementById('auth-password').value;
             if(!e || !p) return window.showToast("Enter email & password", "error");
-            try { await signInWithEmailAndPassword(window.auth, e, p); } 
-            catch(err) { alert("❌ LOGIN FAILED: " + err.message); }
+            try { await signInWithEmailAndPassword(window.auth, e, p); } catch(err) { alert("❌ LOGIN FAILED: " + err.message); }
         };
         
         window.handleEmailSignUp = async () => {
             const e = document.getElementById('auth-email').value.trim(); const p = document.getElementById('auth-password').value;
-            if(!e || p.length < 6) return window.showToast("Password must be 6+ characters", "error");
-            try { await createUserWithEmailAndPassword(window.auth, e, p); } 
-            catch(err) { alert("❌ SIGNUP FAILED: " + err.message); }
+            if(!e || p.length < 6) return window.showToast("Password 6+ characters", "error");
+            try { await createUserWithEmailAndPassword(window.auth, e, p); } catch(err) { alert("❌ SIGNUP FAILED: " + err.message); }
         };
 
         window.logoutApp = async () => { 
-            if(window.currentUserData) {
-                try { await setDoc(doc(window.db, "Users", window.currentUserData.uid), { online: false }, { merge: true }); } catch(e) {}
-            }
+            if(window.currentUserData) { try { await setDoc(doc(window.db, "Users", window.currentUserData.uid), { online: false }, { merge: true }); } catch(e) {} }
             await signOut(window.auth); window.showToast("Logged out!"); switchScreen('login-screen'); 
         };
 
         window.deleteAccount = async () => {
             const otp = Math.floor(1000 + Math.random() * 9000); 
-            const confirmCode = prompt(`⚠️ WARNING: Deleting account data is permanent!\nType OTP to confirm: ${otp}`);
+            const confirmCode = prompt(`⚠️ Account Deletion Permanent!\nType OTP to confirm: ${otp}`);
             if (confirmCode === String(otp)) {
                 try {
                     await deleteDoc(doc(window.db, "Users", window.currentUserData.uid));
@@ -332,15 +253,13 @@
             }
         };
 
-        // IMAGE MANAGER ENGINE WITH EXPLICIT ERRS
         window.handleInstantPhotoPreview = (event, source) => {
             const file = event.target.files[0]; if(!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 const id = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
                 document.getElementById(id).style.backgroundImage = `url('${e.target.result}')`;
-                window.pendingPhotoFile = file; 
-                window.showToast("Photo selected locally!", "success");
+                window.pendingPhotoFile = file; window.showToast("Photo selected locally!", "success");
             };
             reader.readAsDataURL(file);
         };
@@ -352,12 +271,8 @@
                 const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
                 await uploadBytes(storageRef, window.pendingPhotoFile);
                 const url = await getDownloadURL(storageRef);
-                window.pendingPhotoFile = null; 
-                return url;
-            } catch (err) {
-                alert("📸 STORAGE UPLOAD CRASH: " + err.message);
-                throw err;
-            }
+                window.pendingPhotoFile = null; return url;
+            } catch (err) { alert("📸 STORAGE UPLOAD ERROR: " + err.message); throw err; }
         };
 
         window.saveProfileSetup = async () => {
@@ -387,7 +302,6 @@
             window.pendingPhotoFile = null; window.loadBlockedUsers(); switchScreen('settings-screen');
         };
 
-        // FIXED PROFILE UPDATE PREVENTING STALLS ALWAYS
         window.saveEditedProfile = async () => {
             const btn = document.getElementById('update-profile-btn'); btn.innerText = "Updating..."; btn.disabled = true;
             try {
@@ -401,7 +315,7 @@
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), updates, { merge: true });
                 window.currentUserData = { ...window.currentUserData, ...updates };
                 window.showToast("Profile Updated!"); switchScreen('home-screen');
-            } catch (e) { alert("❌ PROFILE RESAVE ERROR: " + e.message); }
+            } catch (e) { alert("❌ UPDATE ERROR: " + e.message); }
             finally { btn.innerText = "Update Profile"; btn.disabled = false; }
         };
 
@@ -441,7 +355,7 @@
         };
 
         window.renderCurrentProfile = () => {
-            const card = document.getElementById('profile-card');
+            const card = document.getElementById('profile-card'); if(!card) return;
             card.style.transform = `translateX(0px) rotate(0deg)`; card.style.opacity = 1;
             if (window.feedProfiles.length === 0 || window.currentFeedIndex >= window.feedProfiles.length) {
                 card.innerHTML = `<div class="p-10 text-center flex flex-col justify-center items-center h-[450px]"><h3 class="text-xl font-bold dark:text-white">No Profiles Left! 🌍</h3></div>`;
@@ -461,8 +375,7 @@
         };
 
         function setupSwipeListeners() {
-            const card = document.getElementById('profile-card');
-            if(!card) return;
+            const card = document.getElementById('profile-card'); if(!card) return;
             let startX = 0, currentX = 0, isDragging = false;
             card.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; isDragging = true; card.style.transition = 'none'; });
             card.addEventListener('touchmove', (e) => {
@@ -512,12 +425,11 @@
             setTimeout(() => { window.currentFeedIndex++; window.renderCurrentProfile(); }, 300);
         };
 
-        window.closeMatchOverlay = () => {
+       window.closeMatchOverlay = () => {
             document.getElementById('match-overlay').classList.add('hidden');
             document.getElementById('match-overlay').classList.remove('flex');
         };
 
-        // REALTIME CHATLIST & UNREAD BADGES SYSTEM
         window.openChatList = async () => {
             switchScreen('chat-list-screen');
             const container = document.getElementById('chat-list-container');
@@ -539,7 +451,8 @@
                     const targetSnap = await getDoc(doc(window.db, "Users", targetUid));
                     if(targetSnap.exists()) {
                         const targetData = targetSnap.data();
-                        const chatId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${u1}`;
+                        // DYNAMIC TYPO FIXED HERE: u1 replaced with myUid safely
+                        const chatId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${myUid}`;
 
                         const item = document.createElement('div');
                         item.className = "flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-b border-gray-100 dark:border-gray-800 transition-colors";
@@ -574,11 +487,9 @@
         window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targetProfile; window.goToChatFromMatch(); };
 
         function renderChatHeaderStatus(isTyping) {
-            const el = document.getElementById('chat-header-status');
-            if(!el) return;
+            const el = document.getElementById('chat-header-status'); if(!el) return;
             if(isTyping) {
-                el.innerText = "... is typing";
-                el.className = "text-xs text-pink-300 font-bold italic animate-pulse h-4";
+                el.innerText = "... is typing"; el.className = "text-xs text-pink-300 font-bold italic animate-pulse h-4";
             } else {
                 el.innerText = targetUserOnlineStatus ? 'Online' : 'Offline';
                 el.className = targetUserOnlineStatus ? 'text-xs text-green-400 font-bold h-4' : 'text-xs text-gray-300 font-medium h-4';
@@ -593,27 +504,20 @@
                 document.getElementById('chat-header-pic').style.backgroundImage = `url('${window.matchedProfileData.profilePicUrl}')`;
                 const u1 = window.currentUserData.uid; window.activeChatId = u1 < targetUid ? `${u1}_${targetUid}` : `${targetUid}_${u1}`;
                 
-                targetUserOnlineStatus = window.matchedProfileData.online || false;
-                renderChatHeaderStatus(false);
+                targetUserOnlineStatus = window.matchedProfileData.online || false; renderChatHeaderStatus(false);
 
                 window.unsubscribeStatusListener = onSnapshot(doc(window.db, "Users", targetUid), (docSnap) => {
-                    if(docSnap.exists()){
-                        targetUserOnlineStatus = docSnap.data().online;
-                        renderChatHeaderStatus(false);
-                    }
+                    if(docSnap.exists()){ targetUserOnlineStatus = docSnap.data().online; renderChatHeaderStatus(false); }
                 });
                 window.unsubscribeTypingListener = onSnapshot(doc(window.db, "Chats", window.activeChatId), (docSnap) => {
-                    if(docSnap.exists()) {
-                        const isTyping = docSnap.data()[`typing_${targetUid}`];
-                        renderChatHeaderStatus(isTyping);
-                    }
+                    if(docSnap.exists()) { const isTyping = docSnap.data()[`typing_${targetUid}`]; renderChatHeaderStatus(isTyping); }
                 });
                 window.listenToMessages();
             }
             switchScreen('chat-screen');
         };
 
-       window.listenToMessages = () => {
+        window.listenToMessages = () => {
             const q = query(collection(window.db, "Chats", window.activeChatId, "Messages"), orderBy("timestamp", "asc"));
             window.unsubscribeChatListener = onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('chat-messages-container');
@@ -677,4 +581,4 @@
         };
     </script>
 </body>
-</html> 
+</html>   
