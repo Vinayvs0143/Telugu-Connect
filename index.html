@@ -11,7 +11,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
-        // DARK MODE PERSISTENCE (Runs immediately to prevent flashing)
         if (localStorage.getItem('tc_theme') === 'dark') {
             document.documentElement.classList.add('dark');
         }
@@ -95,7 +94,9 @@
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Blocked Users 🚫</h3>
                 <div id="blocked-users-list" class="space-y-3"><p class="text-sm text-gray-500">Loading...</p></div>
             </div>
-            <button onclick="logoutApp()" class="w-full max-w-sm border-2 border-red-500 text-red-500 font-bold py-3 mt-10 rounded-xl hover:bg-red-50 dark:hover:bg-red-900 active:scale-95">Logout</button>
+            
+            <button onclick="logoutApp()" class="w-full max-w-sm border-2 border-gray-300 text-gray-700 dark:text-gray-300 font-bold py-3 mt-10 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-800 active:scale-95 transition">Logout</button>
+            <button onclick="deleteAccount()" class="w-full max-w-sm bg-red-50 border-2 border-red-500 text-red-500 font-bold py-3 mt-4 rounded-xl hover:bg-red-500 hover:text-white dark:bg-transparent dark:hover:bg-red-600 transition active:scale-95">Delete Account 🗑️</button>
         </div>
     </div>
 
@@ -110,8 +111,7 @@
             <button onclick="goToChatFromMatch()" class="bg-gradient-to-r from-pink-500 to-orange-400 text-white font-bold py-4 px-10 rounded-full w-full max-w-xs mb-4 shadow-xl active:scale-95 transition transform">Chat Now 💬</button>
             <button onclick="closeMatchOverlay()" class="text-gray-300 font-medium">Keep Swiping</button>
         </div>
-
-        <div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex justify-between items-center z-10">
+<div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex justify-between items-center z-10">
             <h1 class="text-2xl font-black text-pink-500 tracking-tighter">Telugu Connect</h1>
             <div class="flex gap-4 items-center">
                 <button onclick="toggleDarkMode()" class="text-2xl active:scale-75 transition">🌙</button>
@@ -122,7 +122,7 @@
 
         <div class="flex-1 p-4 flex justify-center items-center relative overflow-hidden" id="feed-container">
             <div id="profile-card" class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden relative">
-                </div>
+            </div>
         </div>
 
         <div class="p-6 flex justify-center gap-8 mb-4 z-10" id="action-buttons-layer">
@@ -131,7 +131,7 @@
         </div>
     </div>
 
-<div id="chat-list-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
+    <div id="chat-list-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
         <div class="bg-[#075e54] text-white p-4 shadow-md flex items-center gap-4 z-10 sticky top-0">
             <button onclick="switchScreen('home-screen')" class="font-bold text-2xl active:scale-90 transition">&larr;</button>
             <h1 class="text-xl font-bold">Your Matches</h1>
@@ -183,7 +183,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        // NOTE: deleteUser imported for OTP deletion logic
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
@@ -202,31 +203,34 @@
         window.currentUserData = null; window.feedProfiles = []; window.currentFeedIndex = 0;   
         window.matchedProfileData = null; window.activeChatId = null; 
         window.unsubscribeChatListener = null; window.unsubscribeStatusListener = null; window.unsubscribeTypingListener = null;
-        window.pendingPhotoFile = null; window.blockedUidList = []; window.swipedUidList = []; // Prevent repeating profiles
+        window.pendingPhotoFile = null; window.blockedUidList = []; window.swipedUidList = [];
         let typingTimeout = null;
 
         onAuthStateChanged(window.auth, async (user) => {
             if (user) {
-                await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true });
-                
-                // Fetch Blocked List
-                const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
-                window.blockedUidList = []; blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
-
-                // Fetch My Swipes (Likes and Passes so I don't see them again)
-                const swipeSnap = await getDocs(query(collection(window.db, "Likes"), where("from", "==", user.uid)));
-                window.swipedUidList = []; swipeSnap.forEach(d => window.swipedUidList.push(d.data().to));
-
                 const userSnap = await getDoc(doc(window.db, "Users", user.uid));
-                if (userSnap.exists() && userSnap.data().age) {
-                    window.currentUserData = { ...userSnap.data(), uid: user.uid };
-                    window.showToast("Welcome back, " + window.currentUserData.name + "!");
-                    switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
-                } else {
+                
+                // If record doesn't exist (e.g. Account Deleted), force them out of home feed
+                if(!userSnap.exists()) {
                     window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
                     switchScreen('profile-setup-screen');
                     document.getElementById('setup-name').value = user.displayName || "";
                     document.getElementById('setup-pic-preview').style.backgroundImage = `url('${user.photoURL}')`;
+                    return;
+                }
+
+                await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true });
+                
+                const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
+                window.blockedUidList = []; blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
+
+                const swipeSnap = await getDocs(query(collection(window.db, "Likes"), where("from", "==", user.uid)));
+                window.swipedUidList = []; swipeSnap.forEach(d => window.swipedUidList.push(d.data().to));
+
+                if (userSnap.exists() && userSnap.data().age) {
+                    window.currentUserData = { ...userSnap.data(), uid: user.uid };
+                    window.showToast("Welcome back, " + window.currentUserData.name + "!");
+                    switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
                 }
             } else { switchScreen('login-screen'); }
         });
@@ -234,20 +238,49 @@
         window.handleGoogleLogin = async () => { try { await signInWithPopup(window.auth, window.provider); } catch (e) { window.showToast("Login Failed", "error"); } };
         window.logoutApp = async () => { await signOut(window.auth); window.showToast("Logged out!"); switchScreen('login-screen'); };
 
- // 1. INSTANT PHOTO PREVIEW USING FILEREADER (No waiting for Firebase)
-        window.handleInstantPhotoPreview = (event, source) => {
+// 🗑️ OTP DELETE ACCOUNT FEATURE (NEW)
+        window.deleteAccount = async () => {
+            const otp = Math.floor(1000 + Math.random() * 9000); // 4 Digit Random OTP
+            const confirmCode = prompt(`⚠️ WARNING: Deleting your account is permanent!\nTo confirm, please type this OTP: ${otp}`);
+            
+            if (confirmCode === String(otp)) {
+                try {
+                    window.showToast("Deleting account data...", "success");
+                    
+                    // 1. Delete user from Firestore 'Users' collection completely
+                    await deleteDoc(doc(window.db, "Users", window.currentUserData.uid));
+                    
+                    // 2. Try to completely delete Auth account (sometimes needs fresh login, if error we just logout)
+                    const user = window.auth.currentUser;
+                    if (user) {
+                        await deleteUser(user).catch(err => {
+                            console.log("Firebase requires recent login for auth deletion, signing out instead.");
+                            return signOut(window.auth);
+                        });
+                    }
+                    
+                    window.showToast("Account deleted successfully.", "success");
+                    // System will automatically redirect to Login due to Auth change
+                } catch (e) {
+                    window.showToast("Failed to delete account.", "error");
+                    console.error(e);
+                }
+            } else if (confirmCode !== null && confirmCode !== "") {
+                window.showToast("Incorrect OTP. Deletion cancelled.", "error");
+            }
+        };
+window.handleInstantPhotoPreview = (event, source) => {
             const file = event.target.files[0]; if(!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 const id = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
                 document.getElementById(id).style.backgroundImage = `url('${e.target.result}')`;
-                window.pendingPhotoFile = file; // Save it to be uploaded on "Save" click
+                window.pendingPhotoFile = file; 
                 window.showToast("Photo selected! Adjust it by saving.", "success");
             };
             reader.readAsDataURL(file);
         };
 
-        // Upload Helper
         const uploadPendingPhoto = async () => {
             if(!window.pendingPhotoFile) return window.currentUserData?.profilePicUrl || 'https://via.placeholder.com/150';
             window.showToast("Saving your beautiful photo...", "success");
@@ -317,7 +350,7 @@
             }
         };
 
-        window.unblockUser = async (targetUid) => {
+window.unblockUser = async (targetUid) => {
             try {
                 await deleteDoc(doc(window.db, "Blocks", `${window.currentUserData.uid}_${targetUid}`));
                 window.blockedUidList = window.blockedUidList.filter(id => id !== targetUid);
@@ -331,7 +364,6 @@
             const snap = await getDocs(q);
             window.feedProfiles = [];
             snap.forEach(doc => { 
-                // CRITICAL FIX: Hide already swiped or blocked profiles
                 if (doc.id !== window.currentUserData.uid && !window.blockedUidList.includes(doc.id) && !window.swipedUidList.includes(doc.id)) { 
                     window.feedProfiles.push(doc.data()); 
                 }
@@ -360,7 +392,7 @@
                 </div>`;
             document.getElementById('action-buttons-layer').classList.remove('hidden');
         };
-  // CLEAN SWIPE PHYSICS
+
         function setupSwipeListeners() {
             const card = document.getElementById('profile-card');
             let startX = 0, currentX = 0, isDragging = false;
@@ -372,8 +404,8 @@
                 if(!isDragging) return;
                 currentX = e.touches[0].clientX;
                 const deltaX = currentX - startX;
-                card.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.03}deg)`; // Lighter rotation
-                card.style.opacity = Math.max(1 - Math.abs(deltaX)/500, 0.5); // Fade slightly
+                card.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.03}deg)`; 
+                card.style.opacity = Math.max(1 - Math.abs(deltaX)/500, 0.5); 
                 
                 let stampLike = document.getElementById('stamp-like'); let stampNope = document.getElementById('stamp-nope');
                 if(stampLike && stampNope) {
@@ -399,7 +431,7 @@
             });
         }
 
-        window.handleAction = async (actionType) => {
+window.handleAction = async (actionType) => {
             const target = window.feedProfiles[window.currentFeedIndex];
             const card = document.getElementById('profile-card');
 
@@ -410,16 +442,13 @@
             }
 
             const myUid = window.currentUserData.uid; const targetUid = target.uid;
-            window.swipedUidList.push(targetUid); // Prevent seeing them again
+            window.swipedUidList.push(targetUid); 
 
-            // Save Swipe to Database
             await setDoc(doc(window.db, "Likes", `${myUid}_${targetUid}`), { from: myUid, to: targetUid, type: actionType });
 
-            // CRITICAL MATCH BUG FIX
             if (actionType === 'like') {
                 const revSnap = await getDoc(doc(window.db, "Likes", `${targetUid}_${myUid}`));
                 if (revSnap.exists() && revSnap.data().type === 'like') {
-                    // Create Match safely
                     const matchId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${myUid}`;
                     await setDoc(doc(window.db, "Matches", matchId), { users: [myUid, targetUid], timestamp: Date.now() });
                     window.matchedProfileData = target;
@@ -435,15 +464,12 @@
 
         window.closeMatchOverlay = () => { document.getElementById('match-overlay').classList.add('hidden'); document.getElementById('match-overlay').classList.remove('flex'); };
 
-  // CHAT LIST
         window.openChatList = async () => {
             switchScreen('chat-list-screen');
             const container = document.getElementById('chat-list-container');
             container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">Loading chats...</div>`;
             try {
                 const myUid = window.currentUserData.uid;
-                
-                // Fetch matches where I am inside the users array
                 const matchesRef = collection(window.db, "Matches");
                 const q = query(matchesRef, where("users", "array-contains", myUid));
                 const snap = await getDocs(q);
@@ -468,11 +494,10 @@
                 });
             } catch(e) { 
                 console.error("Match error: ", e);
-                container.innerHTML = `<div class="p-10 text-center text-red-400 text-sm">Oops! Something went wrong loading matches.</div>`; 
+                container.innerHTML = `<div class="p-10 text-center text-red-400 text-sm">Oops! Error loading matches.</div>`; 
             }
         };
-
-        window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targetProfile; window.goToChatFromMatch(); };
+window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targetProfile; window.goToChatFromMatch(); };
 
         window.goToChatFromMatch = () => {
             window.closeMatchOverlay();
@@ -505,11 +530,6 @@
                         }
                     }
                 });
-
-                window.listenToMessages();
-            }
-            switchScreen('chat-screen');
-        };
 window.listenToMessages = () => {
             const q = query(collection(window.db, "Chats", window.activeChatId, "Messages"), orderBy("timestamp", "asc"));
             window.unsubscribeChatListener = onSnapshot(q, (snapshot) => {
