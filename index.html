@@ -83,7 +83,6 @@
             </button>
         </div>
     </div>
-
     <div id="profile-setup-screen" class="screen hidden flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 overflow-y-auto absolute inset-0 z-40">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-sm my-auto mt-10">
             <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white text-center">Your Profile</h2>
@@ -110,7 +109,7 @@
         </div>
     </div>
 
-<div id="settings-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
+    <div id="settings-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
         <div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex items-center gap-4 z-10 sticky top-0">
             <button onclick="switchScreen('home-screen')" class="text-pink-600 font-bold text-xl active:scale-90">&larr;</button>
             <h1 class="text-xl font-bold text-gray-800 dark:text-white">Settings</h1>
@@ -195,7 +194,7 @@
             <button onclick="sendLiveMessage()" class="bg-[#128C7E] dark:bg-[#00a884] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] active:scale-90 shrink-0 transition-colors">➤</button>
         </div>
     </div>
-<script>
+    <script>
         function switchScreen(targetScreenId) {
             document.querySelectorAll('.screen').forEach(s => { s.classList.add('hidden'); s.classList.remove('flex'); });
             document.getElementById(targetScreenId).classList.remove('hidden');
@@ -257,7 +256,7 @@
         let typingTimeout = null;
         let targetUserOnlineStatus = false;
 
-onAuthStateChanged(window.auth, async (user) => {
+        onAuthStateChanged(window.auth, async (user) => {
             isAuthResolved = true; 
             try {
                 if (user) {
@@ -326,7 +325,7 @@ onAuthStateChanged(window.auth, async (user) => {
             reader.readAsDataURL(file);
         };
 
-const uploadPendingPhoto = async () => {
+        const uploadPendingPhoto = async () => {
             if(!window.pendingPhotoFile) return window.currentUserData?.profilePicUrl || 'https://via.placeholder.com/150';
             const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
             await uploadBytes(storageRef, window.pendingPhotoFile);
@@ -379,7 +378,7 @@ const uploadPendingPhoto = async () => {
             btn.innerText = "Update Profile"; btn.disabled = false;
         };
 
-window.loadBlockedUsers = async () => {
+        window.loadBlockedUsers = async () => {
             const container = document.getElementById('blocked-users-list');
             if (window.blockedUidList.length === 0) { container.innerHTML = `<p class="text-sm text-gray-400">No blocks.</p>`; return; }
             container.innerHTML = "";
@@ -434,7 +433,7 @@ window.loadBlockedUsers = async () => {
             document.getElementById('action-buttons-layer').classList.remove('hidden');
         };
 
-function setupSwipeListeners() {
+        function setupSwipeListeners() {
             const card = document.getElementById('profile-card');
             let startX = 0, currentX = 0, isDragging = false;
             card.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; isDragging = true; card.style.transition = 'none'; });
@@ -491,7 +490,8 @@ function setupSwipeListeners() {
             switchScreen('chat-list-screen');
             const container = document.getElementById('chat-list-container');
             container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">Loading chats...</div>`;
- // Clear old listeners before rendering new ones
+            
+   // Clear old listeners before rendering new ones
             window.chatListUnsubscribers.forEach(unsub => unsub());
             window.chatListUnsubscribers = [];
 
@@ -549,7 +549,7 @@ function setupSwipeListeners() {
 
         window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targetProfile; window.goToChatFromMatch(); };
 
-function renderChatHeaderStatus(isTyping) {
+        function renderChatHeaderStatus(isTyping) {
             const el = document.getElementById('chat-header-status');
             if(isTyping) {
                 el.innerText = "... is typing";
@@ -617,7 +617,7 @@ function renderChatHeaderStatus(isTyping) {
             });
         };
 
-window.handleTyping = async () => {
+        window.handleTyping = async () => {
             if(!window.activeChatId) return;
             await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: true }, { merge: true });
             clearTimeout(typingTimeout);
