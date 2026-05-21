@@ -10,7 +10,7 @@
     
     <script>
         window.onerror = function(msg, url, lineNo, columnNo, error) {
-            alert("❌ SYSTEM ALARM: " + msg + "\nLine: " + lineNo);
+            console.error("❌ CRITICAL EXECUTOR FAULT: " + msg + " at Line: " + lineNo);
             return false;
         };
     </script>
@@ -189,18 +189,12 @@
             <button onclick="sendLiveMessage()" class="bg-[#128C7E] dark:bg-[#00a884] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] active:scale-90 shrink-0 transition-colors">➤</button>
         </div>
     </div>
-<script>
-        // BUG 1 FIXED: Explicit Inline Layout Override (Bypasses rendering engine traps completely)
+
+    <script>
         function switchScreen(targetScreenId) {
             document.querySelectorAll('.screen').forEach(s => { s.style.display = 'none'; });
             const target = document.getElementById(targetScreenId);
-            if(target) {
-                if(targetScreenId === 'login-screen' || targetScreenId === 'profile-setup-screen') {
-                    target.style.display = 'flex';
-                } else {
-                    target.style.display = 'flex';
-                }
-            }
+            if(target) target.style.display = 'flex';
         }
 
         window.showToast = (msg, type = 'success') => {
@@ -218,10 +212,8 @@
         }
         
         let isAuthResolved = false;
-        // Unconditional Fail-Safe Emergency Exit Switcher
         setTimeout(() => {
             if(!isAuthResolved) {
-                console.log("Forcing load loop resolution...");
                 switchScreen('login-screen');
             }
         }, 4000);
@@ -231,33 +223,26 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, deleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC2vOFa2aMwQFa2KEej0ZuXVFQUHUQTZEc",
             authDomain: "telugu-connect-64786.firebaseapp.com",
-            projectId: "telugu-connect-64786",
-            storageBucket: "telugu-connect-64786.firebasestorage.app",
-            messagingSenderId: "341601787937",
-            appId: "1:341601787937:web:0d629d09af84817864c360"
+            projectId: "telugu-connect-64786"
         };
 
         const app = initializeApp(firebaseConfig);
         window.auth = getAuth(app); 
         setPersistence(window.auth, browserLocalPersistence);
-        
-        window.db = getFirestore(app); window.storage = getStorage(app); window.provider = new GoogleAuthProvider();
+        window.db = getFirestore(app); window.provider = new GoogleAuthProvider();
 
         window.currentUserData = null; window.feedProfiles = []; window.currentFeedIndex = 0;   
         window.matchedProfileData = null; window.activeChatId = null; 
         window.unsubscribeChatListener = null; window.unsubscribeStatusListener = null; window.unsubscribeTypingListener = null;
-        window.pendingPhotoFile = null; window.blockedUidList = []; window.swipedUidList = [];
+        window.pendingBase64Photo = null; window.blockedUidList = []; window.swipedUidList = [];
         window.chatListUnsubscribers = [];
         let typingTimeout = null;
         let targetUserOnlineStatus = false;
 
-        
-      // BINDING OPERATORS IMMEDIATELY TO RESOLVE VARIABLE DELAYS
         window.handleGoogleLogin = async () => { try { await signInWithPopup(window.auth, window.provider); } catch (e) { window.showToast("Google Auth Failed", "error"); } };
         
         window.handleEmailLogin = async () => {
@@ -268,8 +253,8 @@
         
         window.handleEmailSignUp = async () => {
             const e = document.getElementById('auth-email').value.trim(); const p = document.getElementById('auth-password').value;
-            if(!e || p.length < 6) return window.showToast("Password must be 6+ characters", "error");
-            try { await createUserWithEmailAndPassword(window.auth, e, p); } catch(err) { alert("❌ REGISTRATION ERROR: " + err.message); }
+            if(!e || p.length < 6) return window.showToast("Password 6+ characters", "error");
+            try { await createUserWithEmailAndPassword(window.auth, e, p); } catch(err) { alert("❌ SIGNUP ERROR: " + err.message); }
         };
 
         window.logoutApp = async () => { 
@@ -279,18 +264,17 @@
 
         window.deleteAccount = async () => {
             const otp = Math.floor(1000 + Math.random() * 9000); 
-            const confirmCode = prompt(`⚠️ WARNING: Account data deletion is irreversible!\nType OTP to confirm execution: ${otp}`);
+            const confirmCode = prompt(`⚠️ Permanent account deletion!\nType OTP to confirm: ${otp}`);
             if (confirmCode === String(otp)) {
                 try {
                     await deleteDoc(doc(window.db, "Users", window.currentUserData.uid));
                     const user = window.auth.currentUser;
                     if (user) await deleteUser(user).catch(() => signOut(window.auth));
-                    window.showToast("Account executed.");
-                } catch (e) { alert("Execution interrupted: " + e.message); }
+                    window.showToast("Account deleted.");
+                } catch (e) { alert("Deletion failed: " + e.message); }
             }
         };
 
-         // REAL-TIME SESSION PIPE HANDLER
         onAuthStateChanged(window.auth, async (user) => {
             isAuthResolved = true; 
             try {
@@ -307,7 +291,6 @@
 
                     window.currentUserData = { ...userSnap.data(), uid: user.uid };
 
-                    // Graceful Network Fetchers (Never loops even if standard calls fail)
                     try { await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true }); } catch(e){}
                     try {
                         const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
@@ -324,32 +307,39 @@
                     switchScreen('login-screen'); 
                 }
             } catch (error) { 
-                alert("🚨 INITIALIZATION FAULT: " + error.message);
+                alert("🚨 FAULT DETECTED: " + error.message);
                 switchScreen('login-screen'); 
             }
         });
 
+      // ROBUST CANVAS COMPRESSION PIPELINE (Bypasses Storage entirely)
         window.handleInstantPhotoPreview = (event, source) => {
             const file = event.target.files[0]; if(!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
-                const id = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
-                document.getElementById(id).style.backgroundImage = `url('${e.target.result}')`;
-                window.pendingPhotoFile = file; 
-                window.showToast("Photo captured locally!", "success");
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 350; const MAX_HEIGHT = 350;
+                    let width = img.width; let height = img.height;
+                    
+                    if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+                    else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+                    
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Compress to JPEG with 65% quality to make it ultra tiny for Firestore document limits
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.65);
+                    
+                    const id = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
+                    document.getElementById(id).style.backgroundImage = `url('${compressedBase64}')`;
+                    window.pendingBase64Photo = compressedBase64;
+                    window.showToast("Photo processed and auto-compressed!", "success");
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
-        };
-
-        const uploadPendingPhoto = async () => {
-            if(!window.pendingPhotoFile) return window.currentUserData?.profilePicUrl || 'https://via.placeholder.com/150';
-            try {
-                window.showToast("Uploading payload stream...", "success");
-                const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
-                await uploadBytes(storageRef, window.pendingPhotoFile);
-                const url = await getDownloadURL(storageRef);
-                window.pendingPhotoFile = null; return url;
-            } catch (err) { alert("📸 STORAGE ABORT: " + err.message); throw err; }
         };
 
         window.saveProfileSetup = async () => {
@@ -362,12 +352,13 @@
                 const city = document.getElementById('setup-city').value.trim();
                 if (!name || !username || !age || !gender || !city) throw new Error("All fields are required!");
                 
-                const finalPicUrl = await uploadPendingPhoto();
+                const finalPicUrl = window.pendingBase64Photo || window.currentUserData.profilePicUrl || 'https://via.placeholder.com/150';
                 const payload = { uid: window.currentUserData.uid, name, username, age, gender, city, profilePicUrl: finalPicUrl, bio: "Hey there!", online: true };
+                
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), payload, { merge: true });
-                window.currentUserData = payload;
+                window.currentUserData = payload; window.pendingBase64Photo = null;
                 switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
-            } catch (e) { alert("❌ OPERATION FAULT: " + e.message); }
+            } catch (e) { alert("❌ SAVE FAILED: " + e.message); }
             btn.innerText = "Save & Enter"; btn.disabled = false;
         };
 
@@ -376,7 +367,7 @@
             document.getElementById('edit-city').value = window.currentUserData.city || '';
             document.getElementById('edit-bio').value = window.currentUserData.bio || '';
             document.getElementById('edit-pic-preview').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
-            window.pendingPhotoFile = null; window.loadBlockedUsers(); switchScreen('settings-screen');
+            window.pendingBase64Photo = null; window.loadBlockedUsers(); switchScreen('settings-screen');
         };
 
         window.saveEditedProfile = async () => {
@@ -387,12 +378,14 @@
                 const bio = document.getElementById('edit-bio').value.trim();
                 if(!name || !city) throw new Error("Name and City required!");
                 
-                const finalPicUrl = await uploadPendingPhoto();
+                const finalPicUrl = window.pendingBase64Photo || window.currentUserData.profilePicUrl || 'https://via.placeholder.com/150';
                 const updates = { name, city, bio, profilePicUrl: finalPicUrl };
+                
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), updates, { merge: true });
                 window.currentUserData = { ...window.currentUserData, ...updates };
+                window.pendingBase64Photo = null;
                 window.showToast("Profile Updated!"); switchScreen('home-screen');
-            } catch (e) { alert("❌ RE-SAVE REJECTED: " + e.message); }
+            } catch (e) { alert("❌ UPDATE FAULT: " + e.message); }
             finally { btn.innerText = "Update Profile"; btn.disabled = false; }
         };
 
@@ -531,7 +524,6 @@
                     const targetSnap = await getDoc(doc(window.db, "Users", targetUid));
                     if(targetSnap.exists()) {
                         const targetData = targetSnap.data();
-                        // BUG 2 FIXED: Typos completely resolved with reliable ID comparisons
                         const chatId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${myUid}`;
 
                         const item = document.createElement('div');
