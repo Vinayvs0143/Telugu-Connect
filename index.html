@@ -10,7 +10,7 @@
     
     <script>
         window.onerror = function(msg, url, lineNo, columnNo, error) {
-            console.error("❌ GLOBAL SCRIPT ERROR: " + msg + "\nLine: " + lineNo);
+            alert("❌ SYSTEM ALARM: " + msg + "\nLine: " + lineNo);
             return false;
         };
     </script>
@@ -23,7 +23,7 @@
         }
     </script>
     <style>
-        /* Anti-Copy Protection Lock */
+        /* Anti-Copy Text Selection Restriction */
         body { 
             font-family: sans-serif; 
             -webkit-tap-highlight-color: transparent; 
@@ -34,12 +34,11 @@
             user-select: none; 
         }
         input, textarea { -webkit-user-select: text; user-select: text; }
-        .screen { transition: opacity 0.3s ease; height: 100dvh; }
+        .screen { transition: opacity 0.3s ease; height: 100dvh; width: 100vw; }
         .chat-bg { background-color: #efeae2; background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); }
         .dark .chat-bg { background-color: #0b141a; opacity: 0.95; }
         @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
         .toast-animate { animation: slideDown 0.4s ease forwards; }
-        .interest-cb:checked + label { background-color: #ec4899; color: white; border-color: #ec4899; }
         #profile-card { touch-action: none; will-change: transform, opacity; transition: transform 0.3s ease, opacity 0.3s ease; }
     </style>
 </head>
@@ -47,39 +46,39 @@
 
     <div id="toast-msg" class="hidden fixed left-1/2 transform -translate-x-1/2 z-[999] px-6 py-3 rounded-full text-white font-bold shadow-2xl text-center min-w-[250px] transition-all"></div>
 
-    <div id="loading-screen" class="screen flex flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-50">
+    <div id="loading-screen" class="screen flex flex-col justify-center items-center bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-50" style="display: flex;">
         <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-2 animate-bounce drop-shadow-lg text-center tracking-tight">Telugu Connect</h1>
         <p class="text-white text-sm font-medium tracking-widest mt-2">CONNECTING...</p>
     </div>
 
-    <div id="login-screen" class="screen hidden flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-40 overflow-y-auto">
+    <div id="login-screen" class="screen flex-col justify-center items-center bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-40 overflow-y-auto" style="display: none;">
         <h1 class="text-5xl font-extrabold text-white mb-2 drop-shadow-md mt-10">Telugu Connect</h1>
         <p class="text-white mb-8 text-center font-medium">Meet Telugu youths around you!</p>
         <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm text-center mb-10">
-            <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">18+ Only</h2>
+            <h2 class="text-xl font-bold mb-4 text-gray-800">18+ Only</h2>
             
             <div class="space-y-3 mb-6">
-                <input type="email" id="auth-email" placeholder="Email Address" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500">
-                <input type="password" id="auth-password" placeholder="Password" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500">
+                <input type="email" id="auth-email" placeholder="Email Address" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-pink-500">
+                <input type="password" id="auth-password" placeholder="Password" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-pink-500">
                 <div class="flex gap-2">
                     <button onclick="handleEmailLogin()" class="w-1/2 bg-pink-500 text-white font-bold py-3 rounded-xl hover:bg-pink-600 active:scale-95 transition">Login</button>
-                    <button onclick="handleEmailSignUp()" class="w-1/2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 rounded-xl hover:bg-gray-300 active:scale-95 transition">Sign Up</button>
+                    <button onclick="handleEmailSignUp()" class="w-1/2 bg-gray-200 text-gray-800 font-bold py-3 rounded-xl hover:bg-gray-300 active:scale-95 transition">Sign Up</button>
                 </div>
             </div>
 
             <div class="flex items-center gap-2 mb-6">
-                <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
+                <div class="h-px bg-gray-200 flex-1"></div>
                 <span class="text-xs text-gray-400 font-bold">OR</span>
-                <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
+                <div class="h-px bg-gray-200 flex-1"></div>
             </div>
 
-            <button onclick="handleGoogleLogin()" class="w-full bg-black dark:bg-white dark:text-black text-white font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 transition active:scale-95 shadow-lg">
+            <button onclick="handleGoogleLogin()" class="w-full bg-black text-white font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 transition active:scale-95 shadow-lg">
                 <span>Continue with Google</span>
             </button>
         </div>
     </div>
 
-    <div id="profile-setup-screen" class="screen hidden flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 overflow-y-auto absolute inset-0 z-40">
+    <div id="profile-setup-screen" class="screen flex-col justify-center items-center bg-gradient-to-r from-pink-500 to-orange-400 p-6 overflow-y-auto absolute inset-0 z-40" style="display: none;">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-sm my-auto mt-10">
             <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white text-center">Your Profile</h2>
             <div class="flex flex-col items-center mb-6">
@@ -105,7 +104,7 @@
         </div>
     </div>
 
-    <div id="settings-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
+    <div id="settings-screen" class="screen flex-col w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40" style="display: none;">
         <div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex items-center gap-4 z-10 sticky top-0">
             <button onclick="switchScreen('home-screen')" class="text-pink-600 font-bold text-xl active:scale-90">&larr;</button>
             <h1 class="text-xl font-bold text-gray-800 dark:text-white">Settings</h1>
@@ -133,8 +132,8 @@
         </div>
     </div>
 
-    <div id="home-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 relative transition-colors absolute inset-0 z-30">
-        <div id="match-overlay" class="absolute inset-0 bg-black/95 z-50 hidden flex-col justify-center items-center p-6 text-center backdrop-blur-sm">
+    <div id="home-screen" class="screen flex-col w-full bg-gray-50 dark:bg-gray-900 relative transition-colors absolute inset-0 z-30" style="display: none;">
+        <div id="match-overlay" class="absolute inset-0 bg-black/95 z-50 flex-col justify-center items-center p-6 text-center backdrop-blur-sm" style="display: none;">
             <h1 class="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400 mb-2 animate-pulse">Match! 💖</h1>
             <p class="text-white text-lg mb-8">You both liked each other.</p>
             <div class="flex gap-4 mb-10">
@@ -164,7 +163,7 @@
         </div>
     </div>
 
-    <div id="chat-list-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
+    <div id="chat-list-screen" class="screen flex-col w-full bg-white dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40" style="display: none;">
         <div class="bg-[#075e54] dark:bg-[#202c33] text-white p-4 shadow-md flex items-center gap-4 z-10 sticky top-0 transition-colors">
             <button onclick="switchScreen('home-screen')" class="font-bold text-2xl active:scale-90 transition">&larr;</button>
             <h1 class="text-xl font-bold">Your Matches</h1>
@@ -172,7 +171,7 @@
         <div id="chat-list-container" class="flex-1 divide-y divide-gray-100 dark:divide-gray-800"></div>
     </div>
 
-    <div id="chat-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 relative absolute inset-0 z-50">
+    <div id="chat-screen" class="screen flex-col w-full bg-white dark:bg-gray-900 relative absolute inset-0 z-50" style="display: none;">
         <div class="bg-[#075e54] dark:bg-[#202c33] text-white p-4 shadow-md flex items-center gap-3 z-10 transition-colors">
             <button onclick="exitChat()" class="font-bold text-2xl active:scale-90 transition">&larr;</button>
             <div id="chat-header-pic" class="w-10 h-10 rounded-full bg-gray-300 bg-cover bg-center shadow-sm"></div>
@@ -190,8 +189,45 @@
             <button onclick="sendLiveMessage()" class="bg-[#128C7E] dark:bg-[#00a884] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] active:scale-90 shrink-0 transition-colors">➤</button>
         </div>
     </div>
+<script>
+        // BUG 1 FIXED: Explicit Inline Layout Override (Bypasses rendering engine traps completely)
+        function switchScreen(targetScreenId) {
+            document.querySelectorAll('.screen').forEach(s => { s.style.display = 'none'; });
+            const target = document.getElementById(targetScreenId);
+            if(target) {
+                if(targetScreenId === 'login-screen' || targetScreenId === 'profile-setup-screen') {
+                    target.style.display = 'flex';
+                } else {
+                    target.style.display = 'flex';
+                }
+            }
+        }
+
+        window.showToast = (msg, type = 'success') => {
+            const toast = document.getElementById('toast-msg');
+            toast.innerText = msg;
+            toast.className = `toast-animate fixed top-[40px] left-1/2 transform -translate-x-1/2 z-[999] px-6 py-3 rounded-full text-white font-bold shadow-2xl text-center min-w-[250px] ${type === 'error' ? 'bg-red-500' : 'bg-gray-900'}`;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+
+        window.toggleDarkMode = () => { 
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('tc_theme', isDark ? 'dark' : 'light'); 
+        }
+        
+        let isAuthResolved = false;
+        // Unconditional Fail-Safe Emergency Exit Switcher
+        setTimeout(() => {
+            if(!isAuthResolved) {
+                console.log("Forcing load loop resolution...");
+                switchScreen('login-screen');
+            }
+        }, 4000);
+    </script>
+
     <script type="module">
-        // STABLE STACK DEPLOYMENT: Using Ultra Stable 10.12.0 core pipeline
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, deleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -220,19 +256,20 @@
         let typingTimeout = null;
         let targetUserOnlineStatus = false;
 
-        // BINDING HANDLERS IMMEDIATELY TO WINDOW TO RESOLVE REFERENCE ERRORS ON CLICKS
+        
+      // BINDING OPERATORS IMMEDIATELY TO RESOLVE VARIABLE DELAYS
         window.handleGoogleLogin = async () => { try { await signInWithPopup(window.auth, window.provider); } catch (e) { window.showToast("Google Auth Failed", "error"); } };
         
         window.handleEmailLogin = async () => {
             const e = document.getElementById('auth-email').value.trim(); const p = document.getElementById('auth-password').value;
             if(!e || !p) return window.showToast("Enter email & password", "error");
-            try { await signInWithEmailAndPassword(window.auth, e, p); } catch(err) { alert("❌ LOGIN FAILED: " + err.message); }
+            try { await signInWithEmailAndPassword(window.auth, e, p); } catch(err) { alert("❌ LOGIN ERROR: " + err.message); }
         };
         
         window.handleEmailSignUp = async () => {
             const e = document.getElementById('auth-email').value.trim(); const p = document.getElementById('auth-password').value;
-            if(!e || p.length < 6) return window.showToast("Password 6+ characters", "error");
-            try { await createUserWithEmailAndPassword(window.auth, e, p); } catch(err) { alert("❌ SIGNUP FAILED: " + err.message); }
+            if(!e || p.length < 6) return window.showToast("Password must be 6+ characters", "error");
+            try { await createUserWithEmailAndPassword(window.auth, e, p); } catch(err) { alert("❌ REGISTRATION ERROR: " + err.message); }
         };
 
         window.logoutApp = async () => { 
@@ -242,16 +279,55 @@
 
         window.deleteAccount = async () => {
             const otp = Math.floor(1000 + Math.random() * 9000); 
-            const confirmCode = prompt(`⚠️ Account Deletion Permanent!\nType OTP to confirm: ${otp}`);
+            const confirmCode = prompt(`⚠️ WARNING: Account data deletion is irreversible!\nType OTP to confirm execution: ${otp}`);
             if (confirmCode === String(otp)) {
                 try {
                     await deleteDoc(doc(window.db, "Users", window.currentUserData.uid));
                     const user = window.auth.currentUser;
                     if (user) await deleteUser(user).catch(() => signOut(window.auth));
-                    window.showToast("Account deleted.");
-                } catch (e) { alert("Deletion failed: " + e.message); }
+                    window.showToast("Account executed.");
+                } catch (e) { alert("Execution interrupted: " + e.message); }
             }
         };
+
+         // REAL-TIME SESSION PIPE HANDLER
+        onAuthStateChanged(window.auth, async (user) => {
+            isAuthResolved = true; 
+            try {
+                if (user) {
+                    const userSnap = await getDoc(doc(window.db, "Users", user.uid));
+                    
+                    if(!userSnap.exists() || !userSnap.data().age) {
+                        window.currentUserData = { uid: user.uid, name: user.displayName||"", email: user.email||"", profilePicUrl: user.photoURL||"" };
+                        switchScreen('profile-setup-screen');
+                        document.getElementById('setup-name').value = window.currentUserData.name;
+                        if(window.currentUserData.profilePicUrl) document.getElementById('setup-pic-preview').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
+                        return;
+                    }
+
+                    window.currentUserData = { ...userSnap.data(), uid: user.uid };
+
+                    // Graceful Network Fetchers (Never loops even if standard calls fail)
+                    try { await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true }); } catch(e){}
+                    try {
+                        const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
+                        window.blockedUidList = []; blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
+                    } catch(e){ window.blockedUidList = []; }
+                    try {
+                        const swipeSnap = await getDocs(query(collection(window.db, "Likes"), where("from", "==", user.uid)));
+                        window.swipedUidList = []; swipeSnap.forEach(d => window.swipedUidList.push(d.data().to));
+                    } catch(e){ window.swipedUidList = []; }
+
+                    window.showToast("Welcome back, " + window.currentUserData.name + "!");
+                    switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
+                } else { 
+                    switchScreen('login-screen'); 
+                }
+            } catch (error) { 
+                alert("🚨 INITIALIZATION FAULT: " + error.message);
+                switchScreen('login-screen'); 
+            }
+        });
 
         window.handleInstantPhotoPreview = (event, source) => {
             const file = event.target.files[0]; if(!file) return;
@@ -259,7 +335,8 @@
             reader.onload = (e) => {
                 const id = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
                 document.getElementById(id).style.backgroundImage = `url('${e.target.result}')`;
-                window.pendingPhotoFile = file; window.showToast("Photo selected locally!", "success");
+                window.pendingPhotoFile = file; 
+                window.showToast("Photo captured locally!", "success");
             };
             reader.readAsDataURL(file);
         };
@@ -267,12 +344,12 @@
         const uploadPendingPhoto = async () => {
             if(!window.pendingPhotoFile) return window.currentUserData?.profilePicUrl || 'https://via.placeholder.com/150';
             try {
-                window.showToast("Uploading photo to storage server...", "success");
+                window.showToast("Uploading payload stream...", "success");
                 const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
                 await uploadBytes(storageRef, window.pendingPhotoFile);
                 const url = await getDownloadURL(storageRef);
                 window.pendingPhotoFile = null; return url;
-            } catch (err) { alert("📸 STORAGE UPLOAD ERROR: " + err.message); throw err; }
+            } catch (err) { alert("📸 STORAGE ABORT: " + err.message); throw err; }
         };
 
         window.saveProfileSetup = async () => {
@@ -290,7 +367,7 @@
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), payload, { merge: true });
                 window.currentUserData = payload;
                 switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
-            } catch (e) { alert("❌ SAVE FAILED: " + e.message); }
+            } catch (e) { alert("❌ OPERATION FAULT: " + e.message); }
             btn.innerText = "Save & Enter"; btn.disabled = false;
         };
 
@@ -315,7 +392,7 @@
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), updates, { merge: true });
                 window.currentUserData = { ...window.currentUserData, ...updates };
                 window.showToast("Profile Updated!"); switchScreen('home-screen');
-            } catch (e) { alert("❌ UPDATE ERROR: " + e.message); }
+            } catch (e) { alert("❌ RE-SAVE REJECTED: " + e.message); }
             finally { btn.innerText = "Update Profile"; btn.disabled = false; }
         };
 
@@ -359,7 +436,7 @@
             card.style.transform = `translateX(0px) rotate(0deg)`; card.style.opacity = 1;
             if (window.feedProfiles.length === 0 || window.currentFeedIndex >= window.feedProfiles.length) {
                 card.innerHTML = `<div class="p-10 text-center flex flex-col justify-center items-center h-[450px]"><h3 class="text-xl font-bold dark:text-white">No Profiles Left! 🌍</h3></div>`;
-                document.getElementById('action-buttons-layer').classList.add('hidden'); return;
+                document.getElementById('action-buttons-layer').style.display = 'none'; return;
             }
             const p = window.feedProfiles[window.currentFeedIndex];
             card.innerHTML = `
@@ -371,7 +448,7 @@
                     <h2 id="card-name-age" class="text-3xl font-black text-white drop-shadow-md">${p.name}, ${p.age}</h2>
                     <p id="card-city" class="text-gray-200 font-medium drop-shadow-md">${p.city}</p>
                 </div>`;
-            document.getElementById('action-buttons-layer').classList.remove('hidden');
+            document.getElementById('action-buttons-layer').style.display = 'flex';
         };
 
         function setupSwipeListeners() {
@@ -419,15 +496,18 @@
                     window.matchedProfileData = target;
                     document.getElementById('match-my-pic').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
                     document.getElementById('match-their-pic').style.backgroundImage = `url('${target.profilePicUrl}')`;
-                    setTimeout(() => { document.getElementById('match-overlay').classList.remove('hidden'); document.getElementById('match-overlay').classList.add('flex'); }, 300);
+                    setTimeout(() => { 
+                        const overlay = document.getElementById('match-overlay');
+                        if(overlay) overlay.style.display = 'flex';
+                    }, 300);
                 }
             }
             setTimeout(() => { window.currentFeedIndex++; window.renderCurrentProfile(); }, 300);
         };
 
-       window.closeMatchOverlay = () => {
-            document.getElementById('match-overlay').classList.add('hidden');
-            document.getElementById('match-overlay').classList.remove('flex');
+        window.closeMatchOverlay = () => {
+            const overlay = document.getElementById('match-overlay');
+            if(overlay) overlay.style.display = 'none';
         };
 
         window.openChatList = async () => {
@@ -451,7 +531,7 @@
                     const targetSnap = await getDoc(doc(window.db, "Users", targetUid));
                     if(targetSnap.exists()) {
                         const targetData = targetSnap.data();
-                        // DYNAMIC TYPO FIXED HERE: u1 replaced with myUid safely
+                        // BUG 2 FIXED: Typos completely resolved with reliable ID comparisons
                         const chatId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${myUid}`;
 
                         const item = document.createElement('div');
@@ -581,4 +661,4 @@
         };
     </script>
 </body>
-</html>   
+</html>
