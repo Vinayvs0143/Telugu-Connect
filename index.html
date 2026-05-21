@@ -8,6 +8,13 @@
     <meta name="theme-color" content="#ec4899">
     <title>Telugu Connect</title>
     
+    <script>
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            alert("❌ GLOBAL SCRIPT ERROR: " + msg + "\nLine: " + lineNo + "\nColumn: " + columnNo);
+            return false;
+        };
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
@@ -159,6 +166,7 @@
             <button onclick="sendLiveMessage()" class="bg-[#128C7E] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] active:scale-90 shrink-0">➤</button>
         </div>
     </div>
+
 <script>
         function switchScreen(targetScreenId) {
             document.querySelectorAll('.screen').forEach(s => { s.classList.add('hidden'); s.classList.remove('flex'); });
@@ -180,11 +188,18 @@
             localStorage.setItem('tc_theme', isDark ? 'dark' : 'light'); 
         }
         
-        window.onload = () => { switchScreen('loading-screen'); };
+        // Timeout Fail-Safe: If stuck on loading for >5s, push to login
+        setTimeout(() => {
+            const loading = document.getElementById('loading-screen');
+            if(!loading.classList.contains('hidden')) {
+                console.log("Forcing load loop recovery...");
+                switchScreen('login-screen');
+            }
+        }, 5000);
     </script>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
@@ -207,48 +222,21 @@
         window.pendingPhotoFile = null; window.blockedUidList = []; window.swipedUidList = [];
         let typingTimeout = null;
 
-         // FIX: Asalu error ento screen meeda Popup avvadaniki Alert add chesanu
+        // BULLETPROOF TRY-CATCH SESSION HANDLER
         onAuthStateChanged(window.auth, async (user) => {
             try {
                 if (user) {
                     const userSnap = await getDoc(doc(window.db, "Users", user.uid));
-                    if(!userSnap.exists()) {
+                    
+                    if(!userSnap.exists() || !userSnap.data().age) {
                         window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
                         switchScreen('profile-setup-screen');
                         document.getElementById('setup-name').value = user.displayName || "";
                         if(user.photoURL) document.getElementById('setup-pic-preview').style.backgroundImage = `url('${user.photoURL}')`;
                         return;
                     }
+
                     await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true });
-                    const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
-                    window.blockedUidList = []; blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
-                    const swipeSnap = await getDocs(query(collection(window.db, "Likes"), where("from", "==", user.uid)));
-                    window.swipedUidList = []; swipeSnap.forEach(d => window.swipedUidList.push(d.data().to));
-
-                    if (userSnap.exists() && userSnap.data().age) {
-                        window.currentUserData = { ...userSnap.data(), uid: user.uid };
-                        window.showToast("Welcome back, " + window.currentUserData.name + "!");
-                        switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
-                    }
-                } else { switchScreen('login-screen'); }
-            } catch (error) {
-                // EKKADA ERROR VASTHUNDO SCREEN MEEDA CHUPISTHUNDI
-                alert("🔥 FIREBASE ERROR: " + error.message);
-                window.showToast("Error: " + error.message, "error");
-                switchScreen('login-screen');
-            }
-        });
-
-        window.handleGoogleLogin = async () => { 
-            try { 
-                await signInWithPopup(window.auth, window.provider); 
-            } catch (error) { 
-                // LOGIN FAILED AITHE REASON ENTO CHUPISTHUNDI
-                alert("🔑 LOGIN ERROR: " + error.message);
-                window.showToast("Login Failed", "error"); 
-            } 
-        };
-
                     
                     const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
                     window.blockedUidList = []; blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
@@ -256,70 +244,55 @@
                     const swipeSnap = await getDocs(query(collection(window.db, "Likes"), where("from", "==", user.uid)));
                     window.swipedUidList = []; swipeSnap.forEach(d => window.swipedUidList.push(d.data().to));
 
-                    // Check Profile Completion
-                    const userSnap = await getDoc(doc(window.db, "Users", user.uid));
-                    if (userSnap.exists() && userSnap.data().age) {
-                        window.currentUserData = { ...userSnap.data(), uid: user.uid };
-                        window.showToast("Welcome back, " + window.currentUserData.name + "!");
-                        switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
-                    } else {
-                        // FIX: Added robust else fallback to stop infinite loop
-                        window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
-                        switchScreen('profile-setup-screen');
-                        document.getElementById('setup-name').value = user.displayName || "";
-                        if(user.photoURL) document.getElementById('setup-pic-preview').style.backgroundImage = `url('${user.photoURL}')`;
-                    }
-                } else { switchScreen('login-screen'); }
+                    window.currentUserData = { ...userSnap.data(), uid: user.uid };
+                    window.showToast("Welcome back, " + window.currentUserData.name + "!");
+                    switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
+                } else { 
+                    switchScreen('login-screen'); 
+                }
             } catch (error) {
-                console.error("Auth Load Error: ", error);
-                window.showToast("Network Error. Please reload.", "error");
+                alert("🔥 FIREBASE INTERNAL ERROR: " + error.message);
                 switchScreen('login-screen');
             }
         });
 
-        window.handleGoogleLogin = async () => { try { await signInWithPopup(window.auth, window.provider); } catch (e) { window.showToast("Login Failed", "error"); } };
+        window.handleGoogleLogin = async () => { 
+            try { 
+                await signInWithPopup(window.auth, window.provider); 
+            } catch (e) { 
+                alert("🔑 GOOGLE AUTH DIALOG ERROR: " + e.message);
+            } 
+        };
+        
         window.logoutApp = async () => { await signOut(window.auth); window.showToast("Logged out!"); switchScreen('login-screen'); };
 
-// OTP DELETE ACCOUNT
         window.deleteAccount = async () => {
             const otp = Math.floor(1000 + Math.random() * 9000); 
-            const confirmCode = prompt(`⚠️ WARNING: Deleting your account is permanent!\nTo confirm, type this OTP exactly: ${otp}`);
-            
+            const confirmCode = prompt(`⚠️ WARNING: Permanent account deletion!\nType OTP to confirm: ${otp}`);
             if (confirmCode === String(otp)) {
                 try {
-                    window.showToast("Deleting your data...", "success");
                     await deleteDoc(doc(window.db, "Users", window.currentUserData.uid));
                     const user = window.auth.currentUser;
-                    if (user) {
-                        await deleteUser(user).catch(err => {
-                            console.log("Requires recent login to delete Auth, signing out instead.");
-                            return signOut(window.auth);
-                        });
-                    }
-                    window.showToast("Account deleted.", "success");
-                } catch (e) {
-                    window.showToast("Failed to delete.", "error");
-                }
-            } else if (confirmCode !== null && confirmCode !== "") {
-                window.showToast("Incorrect OTP.", "error");
+                    if (user) await deleteUser(user).catch(() => signOut(window.auth));
+                    window.showToast("Account deleted.");
+                } catch (e) { alert("Deletion failed: " + e.message); }
             }
         };
 
-        window.handleInstantPhotoPreview = (event, source) => {
+window.handleInstantPhotoPreview = (event, source) => {
             const file = event.target.files[0]; if(!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 const id = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
                 document.getElementById(id).style.backgroundImage = `url('${e.target.result}')`;
                 window.pendingPhotoFile = file; 
-                window.showToast("Photo selected! Click save below.", "success");
+                window.showToast("Photo selected!", "success");
             };
             reader.readAsDataURL(file);
         };
 
         const uploadPendingPhoto = async () => {
             if(!window.pendingPhotoFile) return window.currentUserData?.profilePicUrl || 'https://via.placeholder.com/150';
-            window.showToast("Saving photo...", "success");
             const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
             await uploadBytes(storageRef, window.pendingPhotoFile);
             const url = await getDownloadURL(storageRef);
@@ -335,15 +308,13 @@
             const city = document.getElementById('setup-city').value.trim();
 
             if (!name || !username || !age || !gender || !city) { window.showToast("All fields required!", "error"); return; }
-            if (age < 18) { window.showToast("Strictly 18+!", "error"); return; }
-            
             try {
                 const finalPicUrl = await uploadPendingPhoto();
-                const payload = { uid: window.currentUserData.uid, name, username, age, gender, city, email: window.currentUserData.email||"", profilePicUrl: finalPicUrl, bio: "Hey there!", online: true };
+                const payload = { uid: window.currentUserData.uid, name, username, age, gender, city, profilePicUrl: finalPicUrl, bio: "Hey there!", online: true };
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), payload, { merge: true });
                 window.currentUserData = payload;
                 switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
-            } catch (e) { window.showToast("Error saving profile", "error"); console.log(e); }
+            } catch (e) { alert("Save Profile Failed: " + e.message); }
         };
 
         window.openSettings = () => {
@@ -359,18 +330,17 @@
             const name = document.getElementById('edit-name').value.trim();
             const city = document.getElementById('edit-city').value.trim();
             const bio = document.getElementById('edit-bio').value.trim();
-            if(!name || !city) { window.showToast("Name and City required!", "error"); return; }
-            
+            if(!name || !city) { window.showToast("Required fields empty!", "error"); return; }
             try {
                 const finalPicUrl = await uploadPendingPhoto();
                 const updates = { name, city, bio, profilePicUrl: finalPicUrl };
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), updates, { merge: true });
                 window.currentUserData = { ...window.currentUserData, ...updates };
                 window.showToast("Profile Updated!"); switchScreen('home-screen');
-            } catch (e) { window.showToast("Update failed", "error"); }
+            } catch (e) { alert("Update failed: " + e.message); }
         };
 
-        window.loadBlockedUsers = async () => {
+window.loadBlockedUsers = async () => {
             const container = document.getElementById('blocked-users-list');
             if (window.blockedUidList.length === 0) { container.innerHTML = `<p class="text-sm text-gray-400">No blocks.</p>`; return; }
             container.innerHTML = "";
@@ -386,30 +356,32 @@
             }
         };
 
-window.unblockUser = async (targetUid) => {
+        window.unblockUser = async (targetUid) => {
             try {
                 await deleteDoc(doc(window.db, "Blocks", `${window.currentUserData.uid}_${targetUid}`));
                 window.blockedUidList = window.blockedUidList.filter(id => id !== targetUid);
-                window.showToast("User unblocked!", "success"); window.loadBlockedUsers(); window.fetchDiscoverFeed();
-            } catch (e) { window.showToast("Failed to unblock", "error"); }
+                window.showToast("User unblocked!"); window.loadBlockedUsers(); window.fetchDiscoverFeed();
+            } catch (e) { window.showToast("Failed"); }
         };
 
         window.fetchDiscoverFeed = async () => {
-            const targetGender = window.currentUserData.gender === "Boy" ? "Girl" : "Boy";
-            const q = query(collection(window.db, "Users"), where("gender", "==", targetGender));
-            const snap = await getDocs(q);
-            window.feedProfiles = [];
-            snap.forEach(doc => { 
-                if (doc.id !== window.currentUserData.uid && !window.blockedUidList.includes(doc.id) && !window.swipedUidList.includes(doc.id)) { 
-                    window.feedProfiles.push(doc.data()); 
-                }
-            });
-            window.currentFeedIndex = 0; window.renderCurrentProfile();
+            try {
+                const targetGender = window.currentUserData.gender === "Boy" ? "Girl" : "Boy";
+                const q = query(collection(window.db, "Users"), where("gender", "==", targetGender));
+                const snap = await getDocs(q);
+                window.feedProfiles = [];
+                snap.forEach(doc => { 
+                    if (doc.id !== window.currentUserData.uid && !window.blockedUidList.includes(doc.id) && !window.swipedUidList.includes(doc.id)) { 
+                        window.feedProfiles.push(doc.data()); 
+                    }
+                });
+                window.currentFeedIndex = 0; window.renderCurrentProfile();
+            } catch (err) { console.error(err); }
         };
 
         window.renderCurrentProfile = () => {
             const card = document.getElementById('profile-card');
-            card.style.transition = 'none'; card.style.transform = `translateX(0px) rotate(0deg)`; card.style.opacity = 1;
+            card.style.transform = `translateX(0px) rotate(0deg)`; card.style.opacity = 1;
 
             if (window.feedProfiles.length === 0 || window.currentFeedIndex >= window.feedProfiles.length) {
                 card.innerHTML = `<div class="p-10 text-center flex flex-col justify-center items-center h-[450px]"><h3 class="text-xl font-bold dark:text-white">No Profiles Left! 🌍</h3></div>`;
@@ -429,7 +401,7 @@ window.unblockUser = async (targetUid) => {
             document.getElementById('action-buttons-layer').classList.remove('hidden');
         };
 
-        function setupSwipeListeners() {
+function setupSwipeListeners() {
             const card = document.getElementById('profile-card');
             let startX = 0, currentX = 0, isDragging = false;
             
@@ -438,8 +410,7 @@ window.unblockUser = async (targetUid) => {
             });
             card.addEventListener('touchmove', (e) => {
                 if(!isDragging) return;
-                currentX = e.touches[0].clientX;
-                const deltaX = currentX - startX;
+                currentX = e.touches[0].clientX; const deltaX = currentX - startX;
                 card.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.03}deg)`; 
                 card.style.opacity = Math.max(1 - Math.abs(deltaX)/500, 0.5); 
                 
@@ -467,14 +438,14 @@ window.unblockUser = async (targetUid) => {
             });
         }
 
-window.handleAction = async (actionType) => {
+        window.handleAction = async (actionType) => {
             const target = window.feedProfiles[window.currentFeedIndex];
             const card = document.getElementById('profile-card');
 
             if (card.style.transform === 'translateX(0px) rotate(0deg)' || card.style.transform === '') {
                 card.style.transition = 'transform 0.3s ease, opacity 0.3s ease'; card.style.opacity = 0;
-                if(actionType === 'like') { card.style.transform = `translateX(1000px) rotate(30deg)`; } 
-                else { card.style.transform = `translateX(-1000px) rotate(-30deg)`; }
+                if(actionType === 'like') card.style.transform = `translateX(1000px) rotate(30deg)`;
+                else card.style.transform = `translateX(-1000px) rotate(-30deg)`;
             }
 
             const myUid = window.currentUserData.uid; const targetUid = target.uid;
@@ -498,17 +469,13 @@ window.handleAction = async (actionType) => {
             setTimeout(() => { window.currentFeedIndex++; window.renderCurrentProfile(); }, 300);
         };
 
-        window.closeMatchOverlay = () => { document.getElementById('match-overlay').classList.add('hidden'); document.getElementById('match-overlay').classList.remove('flex'); };
-
         window.openChatList = async () => {
             switchScreen('chat-list-screen');
             const container = document.getElementById('chat-list-container');
             container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">Loading chats...</div>`;
             try {
                 const myUid = window.currentUserData.uid;
-                const matchesRef = collection(window.db, "Matches");
-                const q = query(matchesRef, where("users", "array-contains", myUid));
-                const snap = await getDocs(q);
+                const snap = await getDocs(query(collection(window.db, "Matches"), where("users", "array-contains", myUid)));
                 
                 if(snap.empty) { container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">No matches yet. Keep swiping! ⚡</div>`; return; }
                 container.innerHTML = ""; 
@@ -520,21 +487,18 @@ window.handleAction = async (actionType) => {
                     if(targetSnap.exists()) {
                         const targetData = targetSnap.data();
                         const item = document.createElement('div');
-                        item.className = "flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition border-b border-gray-100 dark:border-gray-800";
+                        item.className = "flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-b border-gray-100 dark:border-gray-800";
                         item.onclick = () => window.launchDirectChat(targetData);
-                        item.innerHTML = `<div class="w-14 h-14 rounded-full bg-gray-200 bg-cover bg-center shadow-sm relative" style="background-image: url('${targetData.profilePicUrl}')">
+                        item.innerHTML = `<div class="w-14 h-14 rounded-full bg-gray-200 bg-cover bg-center relative" style="background-image: url('${targetData.profilePicUrl}')">
                                 ${targetData.online ? '<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900"></div>' : ''}</div>
                             <div class="flex-1"><h3 class="font-bold text-gray-800 dark:text-white text-lg">${targetData.name}</h3><p class="text-sm text-gray-400 dark:text-gray-500 truncate">Tap to open chat</p></div>`;
                         container.appendChild(item);
                     }
                 });
-            } catch(e) { 
-                console.error("Match error: ", e);
-                container.innerHTML = `<div class="p-10 text-center text-red-400 text-sm">Oops! Error loading matches.</div>`; 
-            }
+            } catch(e) { container.innerHTML = `<div class="p-10 text-center text-red-400 text-sm">Error loading.</div>`; }
         };
 
-        window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targetProfile; window.goToChatFromMatch(); };
+window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targetProfile; window.goToChatFromMatch(); };
 
         window.goToChatFromMatch = () => {
             window.closeMatchOverlay();
@@ -554,7 +518,7 @@ window.handleAction = async (actionType) => {
                     }
                 });
 
-window.unsubscribeTypingListener = onSnapshot(doc(window.db, "Chats", window.activeChatId), (docSnap) => {
+                window.unsubscribeTypingListener = onSnapshot(doc(window.db, "Chats", window.activeChatId), (docSnap) => {
                     if(docSnap.exists()) {
                         const isTyping = docSnap.data()[`typing_${targetUid}`];
                         if(isTyping) {
@@ -567,7 +531,6 @@ window.unsubscribeTypingListener = onSnapshot(doc(window.db, "Chats", window.act
                         }
                     }
                 });
-
                 window.listenToMessages();
             }
             switchScreen('chat-screen');
@@ -604,7 +567,7 @@ window.unsubscribeTypingListener = onSnapshot(doc(window.db, "Chats", window.act
             });
         };
 
-        window.handleTyping = async () => {
+window.handleTyping = async () => {
             if(!window.activeChatId) return;
             await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: true }, { merge: true });
             clearTimeout(typingTimeout);
@@ -620,7 +583,7 @@ window.unsubscribeTypingListener = onSnapshot(doc(window.db, "Chats", window.act
                 await addDoc(collection(window.db, "Chats", window.activeChatId, "Messages"), { senderId: window.currentUserData.uid, text: text, timestamp: serverTimestamp(), status: 'sent' });
                 input.value = ""; 
                 await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: false }, { merge: true });
-            } catch (err) { window.showToast("Failed to send", "error"); }
+            } catch (err) { window.showToast("Failed to send"); }
         };
 
         window.blockUser = async () => {
@@ -630,7 +593,7 @@ window.unsubscribeTypingListener = onSnapshot(doc(window.db, "Chats", window.act
                     await setDoc(doc(window.db, "Blocks", `${myUid}_${targetUid}`), { blocker: myUid, blocked: targetUid, timestamp: Date.now() });
                     window.blockedUidList.push(targetUid); window.showToast("User blocked!", "error");
                     window.exitChat(); window.fetchDiscoverFeed(); 
-                } catch (e) { window.showToast("Block failed", "error"); }
+                } catch (e) { window.showToast("Block failed"); }
             }
         };
 
