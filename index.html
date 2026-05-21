@@ -10,7 +10,7 @@
     
     <script>
         window.onerror = function(msg, url, lineNo, columnNo, error) {
-            alert("❌ GLOBAL SCRIPT ERROR: " + msg + "\nLine: " + lineNo + "\nColumn: " + columnNo);
+            console.error("❌ GLOBAL SCRIPT ERROR: " + msg + "\nLine: " + lineNo);
             return false;
         };
     </script>
@@ -23,9 +23,25 @@
         }
     </script>
     <style>
-        body { font-family: sans-serif; -webkit-tap-highlight-color: transparent; height: 100dvh; }
+        body { 
+            font-family: sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+            height: 100dvh; 
+            -webkit-user-select: none; 
+            -moz-user-select: none; 
+            -ms-user-select: none; 
+            user-select: none; 
+        }
+        input, textarea { 
+            -webkit-user-select: text; 
+            user-select: text; 
+        }
+        
         .screen { transition: opacity 0.3s ease; height: 100dvh; }
+        
         .chat-bg { background-color: #efeae2; background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); }
+        .dark .chat-bg { background-color: #0b141a; opacity: 0.95; }
+
         @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
         .toast-animate { animation: slideDown 0.4s ease forwards; }
         .interest-cb:checked + label { background-color: #ec4899; color: white; border-color: #ec4899; }
@@ -41,12 +57,28 @@
         <p class="text-white text-sm font-medium tracking-widest mt-2">CONNECTING...</p>
     </div>
 
-    <div id="login-screen" class="screen hidden flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-40">
-        <h1 class="text-5xl font-extrabold text-white mb-2 drop-shadow-md">Telugu Connect</h1>
-        <p class="text-white mb-10 text-center font-medium">Meet Telugu youths around you!</p>
-        <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm text-center">
-            <h2 class="text-xl font-bold mb-4 text-gray-800">18+ Only</h2>
-            <button onclick="handleGoogleLogin()" class="w-full bg-black text-white font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 transition active:scale-95 shadow-lg">
+    <div id="login-screen" class="screen hidden flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-40 overflow-y-auto">
+        <h1 class="text-5xl font-extrabold text-white mb-2 drop-shadow-md mt-10">Telugu Connect</h1>
+        <p class="text-white mb-8 text-center font-medium">Meet Telugu youths around you!</p>
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-sm text-center mb-10">
+            <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-white">18+ Only</h2>
+            
+            <div class="space-y-3 mb-6">
+                <input type="email" id="auth-email" placeholder="Email Address" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500">
+                <input type="password" id="auth-password" placeholder="Password" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500">
+                <div class="flex gap-2">
+                    <button onclick="handleEmailLogin()" class="w-1/2 bg-pink-500 text-white font-bold py-3 rounded-xl hover:bg-pink-600 active:scale-95 transition">Login</button>
+                    <button onclick="handleEmailSignUp()" class="w-1/2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-white font-bold py-3 rounded-xl hover:bg-gray-300 active:scale-95 transition">Sign Up</button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 mb-6">
+                <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
+                <span class="text-xs text-gray-400 font-bold">OR</span>
+                <div class="h-px bg-gray-200 dark:bg-gray-700 flex-1"></div>
+            </div>
+
+            <button onclick="handleGoogleLogin()" class="w-full bg-black dark:bg-white dark:text-black text-white font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 transition active:scale-95 shadow-lg">
                 <span>Continue with Google</span>
             </button>
         </div>
@@ -74,13 +106,13 @@
                 </div>
                 <input type="text" id="setup-city" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="City (e.g., Hyderabad)">
             </div>
-            <button onclick="saveProfileSetup()" class="w-full bg-pink-500 text-white font-bold py-4 mt-6 rounded-xl hover:bg-pink-600 shadow-lg active:scale-95">Save & Enter</button>
+            <button onclick="saveProfileSetup()" id="setup-btn" class="w-full bg-pink-500 text-white font-bold py-4 mt-6 rounded-xl hover:bg-pink-600 shadow-lg active:scale-95 transition">Save & Enter</button>
         </div>
     </div>
 
-    <div id="settings-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
+<div id="settings-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
         <div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex items-center gap-4 z-10 sticky top-0">
-            <button onclick="switchScreen('home-screen')" class="text-pink-600 font-bold text-xl">&larr;</button>
+            <button onclick="switchScreen('home-screen')" class="text-pink-600 font-bold text-xl active:scale-90">&larr;</button>
             <h1 class="text-xl font-bold text-gray-800 dark:text-white">Settings</h1>
         </div>
         <div class="p-6 flex flex-col items-center pb-20">
@@ -88,16 +120,19 @@
                 <span class="text-xs text-gray-800 font-bold bg-white/80 px-2 py-1 rounded-md z-0 pointer-events-none">Change Photo</span>
                 <input type="file" accept="image/*" onchange="handleInstantPhotoPreview(event, 'edit')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
             </div>
+            
             <div class="w-full max-w-sm space-y-4">
                 <input type="text" id="edit-name" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Name">
                 <input type="text" id="edit-city" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="City">
                 <textarea id="edit-bio" rows="3" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Bio"></textarea>
-                <button onclick="saveEditedProfile()" class="w-full bg-pink-500 text-white font-bold py-4 mt-4 rounded-xl hover:bg-pink-600 shadow-lg active:scale-95">Update Profile</button>
+                <button onclick="saveEditedProfile()" id="update-profile-btn" class="w-full bg-pink-500 text-white font-bold py-4 mt-4 rounded-xl hover:bg-pink-600 shadow-lg active:scale-95 transition">Update Profile</button>
             </div>
+            
             <div class="w-full max-w-sm mt-10 border-t border-gray-200 dark:border-gray-700 pt-6">
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Blocked Users 🚫</h3>
                 <div id="blocked-users-list" class="space-y-3"><p class="text-sm text-gray-500">Loading...</p></div>
             </div>
+            
             <button onclick="logoutApp()" class="w-full max-w-sm border-2 border-gray-300 text-gray-700 dark:text-gray-300 font-bold py-3 mt-10 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-800 active:scale-95 transition">Logout</button>
             <button onclick="deleteAccount()" class="w-full max-w-sm bg-red-50 border-2 border-red-500 text-red-500 font-bold py-3 mt-4 rounded-xl hover:bg-red-500 hover:text-white dark:bg-transparent dark:hover:bg-red-600 transition active:scale-95">Delete Account 🗑️</button>
         </div>
@@ -134,16 +169,16 @@
         </div>
     </div>
 
-<div id="chat-list-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
-        <div class="bg-[#075e54] text-white p-4 shadow-md flex items-center gap-4 z-10 sticky top-0">
+    <div id="chat-list-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
+        <div class="bg-[#075e54] dark:bg-[#202c33] text-white p-4 shadow-md flex items-center gap-4 z-10 sticky top-0 transition-colors">
             <button onclick="switchScreen('home-screen')" class="font-bold text-2xl active:scale-90 transition">&larr;</button>
             <h1 class="text-xl font-bold">Your Matches</h1>
         </div>
         <div id="chat-list-container" class="flex-1 divide-y divide-gray-100 dark:divide-gray-800"></div>
     </div>
 
-    <div id="chat-screen" class="screen hidden flex-col w-full bg-white relative absolute inset-0 z-50">
-        <div class="bg-[#075e54] text-white p-4 shadow-md flex items-center gap-3 z-10">
+    <div id="chat-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 relative absolute inset-0 z-50">
+        <div class="bg-[#075e54] dark:bg-[#202c33] text-white p-4 shadow-md flex items-center gap-3 z-10 transition-colors">
             <button onclick="exitChat()" class="font-bold text-2xl active:scale-90 transition">&larr;</button>
             <div id="chat-header-pic" class="w-10 h-10 rounded-full bg-gray-300 bg-cover bg-center shadow-sm"></div>
             <div class="flex-1">
@@ -152,10 +187,12 @@
             </div>
             <button onclick="blockUser()" class="text-red-400 hover:text-red-300 font-bold text-xl" title="Block User">🚫</button>
         </div>
+        
         <div class="flex-1 p-4 overflow-y-auto chat-bg flex flex-col gap-2" id="chat-messages-container"></div>
-        <div class="p-3 bg-[#f0f0f0] flex gap-2 items-center border-t border-gray-300 w-full z-50 shrink-0 pb-6">
-            <input type="text" id="msg-input" oninput="handleTyping()" placeholder="Type a message..." class="flex-1 bg-white rounded-full px-5 py-3.5 outline-none shadow-sm text-gray-800 focus:ring-2 focus:ring-[#128C7E]">
-            <button onclick="sendLiveMessage()" class="bg-[#128C7E] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] active:scale-90 shrink-0">➤</button>
+        
+        <div class="p-3 bg-[#f0f0f0] dark:bg-[#202c33] flex gap-2 items-center border-t border-gray-300 dark:border-gray-700 w-full z-50 shrink-0 pb-6 transition-colors">
+            <input type="text" id="msg-input" oninput="handleTyping()" placeholder="Type a message..." class="flex-1 bg-white dark:bg-[#2a3942] dark:text-white rounded-full px-5 py-3.5 outline-none shadow-sm text-gray-800 focus:ring-2 focus:ring-[#128C7E] transition-colors">
+            <button onclick="sendLiveMessage()" class="bg-[#128C7E] dark:bg-[#00a884] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] active:scale-90 shrink-0 transition-colors">➤</button>
         </div>
     </div>
 <script>
@@ -179,18 +216,20 @@
             localStorage.setItem('tc_theme', isDark ? 'dark' : 'light'); 
         }
         
+        let isAuthResolved = false;
         setTimeout(() => {
-            const loading = document.getElementById('loading-screen');
-            if(!loading.classList.contains('hidden')) {
-                console.log("Forcing load loop recovery...");
-                switchScreen('login-screen');
+            if(!isAuthResolved) {
+                const loading = document.getElementById('loading-screen');
+                if(!loading.classList.contains('hidden')) {
+                    switchScreen('login-screen');
+                }
             }
-        }, 5000);
+        }, 8000);
     </script>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, deleteUser, signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
@@ -204,23 +243,30 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        window.auth = getAuth(app); window.db = getFirestore(app); window.storage = getStorage(app); window.provider = new GoogleAuthProvider();
+        window.auth = getAuth(app); 
+        setPersistence(window.auth, browserLocalPersistence);
+        
+        window.db = getFirestore(app); window.storage = getStorage(app); window.provider = new GoogleAuthProvider();
 
         window.currentUserData = null; window.feedProfiles = []; window.currentFeedIndex = 0;   
         window.matchedProfileData = null; window.activeChatId = null; 
         window.unsubscribeChatListener = null; window.unsubscribeStatusListener = null; window.unsubscribeTypingListener = null;
         window.pendingPhotoFile = null; window.blockedUidList = []; window.swipedUidList = [];
+        window.chatListUnsubscribers = []; // NEW: Array to handle unread message listeners
+        
         let typingTimeout = null;
+        let targetUserOnlineStatus = false;
 
-        onAuthStateChanged(window.auth, async (user) => {
+onAuthStateChanged(window.auth, async (user) => {
+            isAuthResolved = true; 
             try {
                 if (user) {
                     const userSnap = await getDoc(doc(window.db, "Users", user.uid));
                     if(!userSnap.exists() || !userSnap.data().age) {
-                        window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
+                        window.currentUserData = { uid: user.uid, name: user.displayName||"", email: user.email||"", photoURL: user.photoURL||"" };
                         switchScreen('profile-setup-screen');
-                        document.getElementById('setup-name').value = user.displayName || "";
-                        if(user.photoURL) document.getElementById('setup-pic-preview').style.backgroundImage = `url('${user.photoURL}')`;
+                        document.getElementById('setup-name').value = window.currentUserData.name;
+                        if(window.currentUserData.photoURL) document.getElementById('setup-pic-preview').style.backgroundImage = `url('${window.currentUserData.photoURL}')`;
                         return;
                     }
                     await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true });
@@ -231,14 +277,29 @@
                     window.swipedUidList = []; swipeSnap.forEach(d => window.swipedUidList.push(d.data().to));
 
                     window.currentUserData = { ...userSnap.data(), uid: user.uid };
-                    window.showToast("Welcome back, " + window.currentUserData.name + "!");
                     switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
                 } else { switchScreen('login-screen'); }
-            } catch (error) { alert("🔥 FIREBASE INTERNAL ERROR: " + error.message); switchScreen('login-screen'); }
+            } catch (error) { console.log(error); switchScreen('login-screen'); }
         });
 
-        window.handleGoogleLogin = async () => { try { await signInWithPopup(window.auth, window.provider); } catch (e) { alert("🔑 GOOGLE AUTH DIALOG ERROR: " + e.message); } };
-        window.logoutApp = async () => { await signOut(window.auth); window.showToast("Logged out!"); switchScreen('login-screen'); };
+        window.handleGoogleLogin = async () => { try { await signInWithPopup(window.auth, window.provider); } catch (e) { window.showToast("Google Auth Failed", "error"); } };
+        
+        window.handleEmailLogin = async () => {
+            const e = document.getElementById('auth-email').value.trim(); const p = document.getElementById('auth-password').value;
+            if(!e || !p) return window.showToast("Enter email & password", "error");
+            try { await signInWithEmailAndPassword(window.auth, e, p); } catch(err) { window.showToast("Invalid credentials", "error"); }
+        };
+        
+        window.handleEmailSignUp = async () => {
+            const e = document.getElementById('auth-email').value.trim(); const p = document.getElementById('auth-password').value;
+            if(!e || p.length < 6) return window.showToast("Email required, password 6+ chars", "error");
+            try { await createUserWithEmailAndPassword(window.auth, e, p); } catch(err) { window.showToast("Sign up failed", "error"); }
+        };
+
+        window.logoutApp = async () => { 
+            if(window.currentUserData) await setDoc(doc(window.db, "Users", window.currentUserData.uid), { online: false }, { merge: true });
+            await signOut(window.auth); window.showToast("Logged out!"); switchScreen('login-screen'); 
+        };
 
         window.deleteAccount = async () => {
             const otp = Math.floor(1000 + Math.random() * 9000); 
@@ -253,42 +314,47 @@
             }
         };
 
-window.handleInstantPhotoPreview = (event, source) => {
+        window.handleInstantPhotoPreview = (event, source) => {
             const file = event.target.files[0]; if(!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
                 const id = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
                 document.getElementById(id).style.backgroundImage = `url('${e.target.result}')`;
-                window.pendingPhotoFile = file; window.showToast("Photo selected!", "success");
+                window.pendingPhotoFile = file; 
+                window.showToast("Photo selected! Click Update below to save.", "success");
             };
             reader.readAsDataURL(file);
         };
 
-        const uploadPendingPhoto = async () => {
+const uploadPendingPhoto = async () => {
             if(!window.pendingPhotoFile) return window.currentUserData?.profilePicUrl || 'https://via.placeholder.com/150';
             const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
             await uploadBytes(storageRef, window.pendingPhotoFile);
             const url = await getDownloadURL(storageRef);
-            window.pendingPhotoFile = null; return url;
+            window.pendingPhotoFile = null; 
+            return url;
         };
 
         window.saveProfileSetup = async () => {
-            const name = document.getElementById('setup-name').value.trim();
-            const username = document.getElementById('setup-username').value.trim().toLowerCase();
-            const age = parseInt(document.getElementById('setup-age').value);
-            const gender = document.getElementById('setup-gender').value;
-            const city = document.getElementById('setup-city').value.trim();
-            if (!name || !username || !age || !gender || !city) { window.showToast("All fields required!", "error"); return; }
+            const btn = document.getElementById('setup-btn'); btn.innerText = "Creating Profile..."; btn.disabled = true;
             try {
+                const name = document.getElementById('setup-name').value.trim();
+                const username = document.getElementById('setup-username').value.trim().toLowerCase();
+                const age = parseInt(document.getElementById('setup-age').value);
+                const gender = document.getElementById('setup-gender').value;
+                const city = document.getElementById('setup-city').value.trim();
+                if (!name || !username || !age || !gender || !city) throw new Error("All fields required!");
+                
                 const finalPicUrl = await uploadPendingPhoto();
                 const payload = { uid: window.currentUserData.uid, name, username, age, gender, city, profilePicUrl: finalPicUrl, bio: "Hey there!", online: true };
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), payload, { merge: true });
                 window.currentUserData = payload;
                 switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
-            } catch (e) { alert("Save Profile Failed: " + e.message); }
+            } catch (e) { window.showToast(e.message, "error"); }
+            btn.innerText = "Save & Enter"; btn.disabled = false;
         };
 
-window.openSettings = () => {
+        window.openSettings = () => {
             document.getElementById('edit-name').value = window.currentUserData.name || '';
             document.getElementById('edit-city').value = window.currentUserData.city || '';
             document.getElementById('edit-bio').value = window.currentUserData.bio || '';
@@ -297,20 +363,23 @@ window.openSettings = () => {
         };
 
         window.saveEditedProfile = async () => {
-            const name = document.getElementById('edit-name').value.trim();
-            const city = document.getElementById('edit-city').value.trim();
-            const bio = document.getElementById('edit-bio').value.trim();
-            if(!name || !city) { window.showToast("Required fields empty!", "error"); return; }
+            const btn = document.getElementById('update-profile-btn'); btn.innerText = "Updating..."; btn.disabled = true;
             try {
+                const name = document.getElementById('edit-name').value.trim();
+                const city = document.getElementById('edit-city').value.trim();
+                const bio = document.getElementById('edit-bio').value.trim();
+                if(!name || !city) throw new Error("Required fields empty!");
+                
                 const finalPicUrl = await uploadPendingPhoto();
                 const updates = { name, city, bio, profilePicUrl: finalPicUrl };
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), updates, { merge: true });
                 window.currentUserData = { ...window.currentUserData, ...updates };
                 window.showToast("Profile Updated!"); switchScreen('home-screen');
-            } catch (e) { alert("Update failed: " + e.message); }
+            } catch (e) { window.showToast(e.message, "error"); }
+            btn.innerText = "Update Profile"; btn.disabled = false;
         };
 
-        window.loadBlockedUsers = async () => {
+window.loadBlockedUsers = async () => {
             const container = document.getElementById('blocked-users-list');
             if (window.blockedUidList.length === 0) { container.innerHTML = `<p class="text-sm text-gray-400">No blocks.</p>`; return; }
             container.innerHTML = "";
@@ -416,39 +485,80 @@ function setupSwipeListeners() {
             setTimeout(() => { window.currentFeedIndex++; window.renderCurrentProfile(); }, 300);
         };
 
-  // FIXED: The missing close match overlay function!
-        window.closeMatchOverlay = () => {
-            document.getElementById('match-overlay').classList.add('hidden');
-            document.getElementById('match-overlay').classList.remove('flex');
-        };
+        window.closeMatchOverlay = () => { document.getElementById('match-overlay').classList.add('hidden'); document.getElementById('match-overlay').classList.remove('flex'); };
 
         window.openChatList = async () => {
             switchScreen('chat-list-screen');
             const container = document.getElementById('chat-list-container');
             container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">Loading chats...</div>`;
+ // Clear old listeners before rendering new ones
+            window.chatListUnsubscribers.forEach(unsub => unsub());
+            window.chatListUnsubscribers = [];
+
             try {
                 const myUid = window.currentUserData.uid;
                 const snap = await getDocs(query(collection(window.db, "Matches"), where("users", "array-contains", myUid)));
                 if(snap.empty) { container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">No matches yet. Keep swiping! ⚡</div>`; return; }
                 container.innerHTML = ""; 
+                
                 snap.forEach(async (matchDoc) => {
                     const uids = matchDoc.data().users; const targetUid = uids.find(id => id !== myUid);
                     if(window.blockedUidList.includes(targetUid)) return;
+                    
                     const targetSnap = await getDoc(doc(window.db, "Users", targetUid));
                     if(targetSnap.exists()) {
-                        const targetData = targetSnap.data(); const item = document.createElement('div');
-                        item.className = "flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-b border-gray-100 dark:border-gray-800";
+                        const targetData = targetSnap.data();
+                        const chatId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${myUid}`;
+
+                        const item = document.createElement('div');
+                        item.className = "flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer border-b border-gray-100 dark:border-gray-800 transition-colors";
                         item.onclick = () => window.launchDirectChat(targetData);
-                        item.innerHTML = `<div class="w-14 h-14 rounded-full bg-gray-200 bg-cover bg-center relative" style="background-image: url('${targetData.profilePicUrl}')">
-                                ${targetData.online ? '<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900"></div>' : ''}</div>
-                            <div class="flex-1"><h3 class="font-bold text-gray-800 dark:text-white text-lg">${targetData.name}</h3><p class="text-sm text-gray-400 dark:text-gray-500 truncate">Tap to open chat</p></div>`;
+                        item.innerHTML = `
+                            <div class="w-14 h-14 rounded-full bg-gray-200 bg-cover bg-center relative shadow-sm" style="background-image: url('${targetData.profilePicUrl}')">
+                                ${targetData.online ? '<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-900"></div>' : ''}
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-gray-800 dark:text-white text-lg">${targetData.name}</h3>
+                                <p class="text-sm text-gray-400 dark:text-gray-500 truncate">Tap to open chat</p>
+                            </div>
+                            <div class="flex flex-col items-end gap-1">
+                                <span id="badge-${chatId}" class="hidden bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm"></span>
+                            </div>`;
                         container.appendChild(item);
+
+                        // LIVE UNREAD MESSAGE LISTENER
+                        const msgsRef = collection(window.db, "Chats", chatId, "Messages");
+                        const unreadQ = query(msgsRef, where("senderId", "==", targetUid), where("status", "==", "sent"));
+                        const unsub = onSnapshot(unreadQ, (unreadSnap) => {
+                            const unreadCount = unreadSnap.size;
+                            const badgeElem = document.getElementById(`badge-${chatId}`);
+                            if(badgeElem) {
+                                if(unreadCount > 0) {
+                                    badgeElem.innerText = unreadCount;
+                                    badgeElem.classList.remove('hidden');
+                                } else {
+                                    badgeElem.classList.add('hidden');
+                                }
+                            }
+                        });
+                        window.chatListUnsubscribers.push(unsub);
                     }
                 });
             } catch(e) { container.innerHTML = `<div class="p-10 text-center text-red-400 text-sm">Error loading.</div>`; }
         };
 
         window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targetProfile; window.goToChatFromMatch(); };
+
+function renderChatHeaderStatus(isTyping) {
+            const el = document.getElementById('chat-header-status');
+            if(isTyping) {
+                el.innerText = "... is typing";
+                el.className = "text-xs text-pink-300 font-bold italic animate-pulse h-4";
+            } else {
+                el.innerText = targetUserOnlineStatus ? 'Online' : 'Offline';
+                el.className = targetUserOnlineStatus ? 'text-xs text-green-400 font-bold h-4' : 'text-xs text-gray-300 font-medium h-4';
+            }
+        }
 
         window.goToChatFromMatch = () => {
             window.closeMatchOverlay();
@@ -458,24 +568,19 @@ function setupSwipeListeners() {
                 document.getElementById('chat-header-pic').style.backgroundImage = `url('${window.matchedProfileData.profilePicUrl}')`;
                 const u1 = window.currentUserData.uid; window.activeChatId = u1 < targetUid ? `${u1}_${targetUid}` : `${targetUid}_${u1}`;
                 
+                targetUserOnlineStatus = window.matchedProfileData.online || false;
+                renderChatHeaderStatus(false);
+
                 window.unsubscribeStatusListener = onSnapshot(doc(window.db, "Users", targetUid), (docSnap) => {
                     if(docSnap.exists()){
-                        const isOnline = docSnap.data().online;
-                        document.getElementById('chat-header-status').innerText = isOnline ? 'Online' : 'Offline';
-                        document.getElementById('chat-header-status').className = isOnline ? 'text-xs text-green-300 font-bold' : 'text-xs text-gray-300 font-medium h-4';
+                        targetUserOnlineStatus = docSnap.data().online;
+                        renderChatHeaderStatus(false);
                     }
                 });
                 window.unsubscribeTypingListener = onSnapshot(doc(window.db, "Chats", window.activeChatId), (docSnap) => {
                     if(docSnap.exists()) {
                         const isTyping = docSnap.data()[`typing_${targetUid}`];
-                        if(isTyping) {
-                            document.getElementById('chat-header-status').innerText = "... is typing";
-                            document.getElementById('chat-header-status').className = "text-xs text-pink-300 font-bold italic animate-pulse h-4";
-                        } else {
-                            const wasOnline = document.getElementById('chat-header-status').className.includes('green');
-                            document.getElementById('chat-header-status').innerText = wasOnline ? 'Online' : 'Offline';
-                            document.getElementById('chat-header-status').className = wasOnline ? 'text-xs text-green-300 font-bold' : 'text-xs text-gray-300 font-medium h-4';
-                        }
+                        renderChatHeaderStatus(isTyping);
                     }
                 });
                 window.listenToMessages();
@@ -487,22 +592,24 @@ function setupSwipeListeners() {
             const q = query(collection(window.db, "Chats", window.activeChatId, "Messages"), orderBy("timestamp", "asc"));
             window.unsubscribeChatListener = onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('chat-messages-container');
-                container.innerHTML = `<div class="text-center text-gray-600 bg-yellow-100/90 mx-auto px-4 py-2 rounded-lg text-xs mt-3 shadow-sm font-medium">🔒 Messages are end-to-end encrypted</div>`; 
+                container.innerHTML = `<div class="text-center text-gray-600 dark:text-gray-300 bg-yellow-100/90 dark:bg-yellow-900/40 mx-auto px-4 py-2 rounded-lg text-xs mt-3 shadow-sm font-medium">🔒 Messages are end-to-end encrypted</div>`; 
 
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data(); const isMe = data.senderId === window.currentUserData.uid;
                     let timeString = ""; if(data.timestamp) { timeString = data.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
                     if(!isMe && data.status !== 'read') { updateDoc(docSnap.ref, { status: 'read' }); }
+                    
                     let ticks = '<span class="text-gray-400 text-[10px]">✓</span>';
                     if (data.status === 'read') { ticks = '<span class="text-blue-500 text-xs font-bold shadow-sm">✓✓</span>'; } 
                     else if (data.status === 'sent') { ticks = '<span class="text-gray-500 text-xs font-bold">✓✓</span>'; }
+                    
                     const msgBubble = document.createElement('div');
                     if (isMe) {
-                        msgBubble.className = "bg-[#dcf8c6] p-2 px-3 rounded-xl rounded-tr-none self-end max-w-[85%] shadow-sm text-sm";
-                        msgBubble.innerHTML = `<span class="text-gray-800 leading-relaxed">${data.text}</span><span class="text-[10px] text-gray-500 ml-3 float-right mt-3 font-semibold">${timeString} <span class="ml-1">${ticks}</span></span>`;
+                        msgBubble.className = "bg-[#dcf8c6] dark:bg-[#005c4b] p-2 px-3 rounded-xl rounded-tr-none self-end max-w-[85%] shadow-sm text-sm transition-colors";
+                        msgBubble.innerHTML = `<span class="text-gray-800 dark:text-white leading-relaxed">${data.text}</span><span class="text-[10px] text-gray-500 dark:text-gray-300 ml-3 float-right mt-3 font-semibold">${timeString} <span class="ml-1">${ticks}</span></span>`;
                     } else {
-                        msgBubble.className = "bg-white p-2 px-3 rounded-xl rounded-tl-none self-start max-w-[85%] shadow-sm text-sm";
-                        msgBubble.innerHTML = `<span class="text-gray-800 leading-relaxed">${data.text}</span><span class="text-[10px] text-gray-400 ml-3 float-right mt-3 font-semibold">${timeString}</span>`;
+                        msgBubble.className = "bg-white dark:bg-[#202c33] p-2 px-3 rounded-xl rounded-tl-none self-start max-w-[85%] shadow-sm text-sm transition-colors";
+                        msgBubble.innerHTML = `<span class="text-gray-800 dark:text-white leading-relaxed">${data.text}</span><span class="text-[10px] text-gray-400 dark:text-gray-400 ml-3 float-right mt-3 font-semibold">${timeString}</span>`;
                     }
                     container.appendChild(msgBubble);
                 });
