@@ -13,26 +13,30 @@
         tailwind.config = { darkMode: 'class' }
     </script>
     <style>
-        body { font-family: sans-serif; -webkit-tap-highlight-color: transparent; }
-        .screen { transition: opacity 0.3s ease; }
+        /* Modern Mobile Viewport Fix */
+        body { font-family: sans-serif; -webkit-tap-highlight-color: transparent; height: 100dvh; }
+        .screen { transition: opacity 0.3s ease; height: 100dvh; }
+        
         .chat-bg { background-color: #efeae2; background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); }
         @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
         .toast-animate { animation: slideDown 0.4s ease forwards; }
-        /* Custom Checkbox Styling */
         .interest-cb:checked + label { background-color: #ec4899; color: white; border-color: #ec4899; }
+        
+        /* Smooth Swipe Animations */
+        #profile-card { touch-action: none; will-change: transform; transition: transform 0.3s ease; }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 h-screen w-screen overflow-hidden transition-colors duration-300">
+<body class="bg-gray-100 dark:bg-gray-900 w-screen overflow-hidden transition-colors duration-300 relative">
 
-    <div id="toast-msg" class="hidden fixed left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full text-white font-bold shadow-2xl text-center min-w-[250px] transition-all"></div>
+    <div id="toast-msg" class="hidden fixed left-1/2 transform -translate-x-1/2 z-[999] px-6 py-3 rounded-full text-white font-bold shadow-2xl text-center min-w-[250px] transition-all"></div>
 
-    <div id="loading-screen" class="screen flex flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6">
-        <h1 class="text-5xl font-extrabold text-white mb-2 animate-bounce drop-shadow-lg">TC.</h1>
-        <p class="text-white text-sm font-medium tracking-widest">CONNECTING...</p>
+    <div id="loading-screen" class="screen flex flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-50">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-2 animate-bounce drop-shadow-lg text-center tracking-tight">Telugu Connect</h1>
+        <p class="text-white text-sm font-medium tracking-widest mt-2">CONNECTING...</p>
     </div>
 
-    <div id="login-screen" class="screen hidden flex flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6">
-        <h1 class="text-5xl font-extrabold text-white mb-2 drop-shadow-md">TC.</h1>
+    <div id="login-screen" class="screen hidden flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-40">
+        <h1 class="text-5xl font-extrabold text-white mb-2 drop-shadow-md">Telugu Connect</h1>
         <p class="text-white mb-10 text-center font-medium">Meet Telugu youths around you!</p>
         <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm text-center">
             <h2 class="text-xl font-bold mb-4 text-gray-800">18+ Only</h2>
@@ -43,13 +47,13 @@
         </div>
     </div>
 
-    <div id="profile-setup-screen" class="screen hidden flex-col justify-center items-center h-full w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 overflow-y-auto">
+    <div id="profile-setup-screen" class="screen hidden flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 overflow-y-auto absolute inset-0 z-40">
         <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-sm my-auto">
             <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white text-center">Your Profile</h2>
             <div class="flex flex-col items-center mb-6">
                 <div id="setup-pic-preview" class="w-24 h-24 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center flex items-center justify-center overflow-hidden relative shadow-md">
-                    <span class="text-xs text-gray-500 absolute pointer-events-none bg-white/70 px-1 rounded">Upload</span>
-                    <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'setup')" class="absolute inset-0 opacity-0 cursor-pointer">
+                    <span class="text-xs text-gray-500 absolute pointer-events-none bg-white/70 px-1 rounded z-0">Upload</span>
+                    <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'setup')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                 </div>
             </div>
             <div class="space-y-4">
@@ -80,15 +84,15 @@
         </div>
     </div>
 
-    <div id="settings-screen" class="screen hidden flex-col h-full w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto">
+    <div id="settings-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
         <div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex items-center gap-4 z-10 sticky top-0">
             <button onclick="switchScreen('home-screen')" class="text-pink-600 font-bold text-xl">&larr;</button>
             <h1 class="text-xl font-bold text-gray-800 dark:text-white">Settings</h1>
         </div>
         <div class="p-6 flex flex-col items-center pb-20">
             <div id="edit-pic-preview" class="w-32 h-32 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center mb-6 flex items-center justify-center overflow-hidden relative shadow-lg">
-                <span class="text-xs text-white bg-black/50 px-2 py-1 rounded absolute pointer-events-none">Change</span>
-                <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'edit')" class="absolute inset-0 opacity-0 cursor-pointer">
+                <span class="text-xs text-white bg-black/50 px-2 py-1 rounded absolute pointer-events-none z-0">Change</span>
+                <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'edit')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
             </div>
             <div class="w-full max-w-sm space-y-4">
                 <input type="text" id="edit-name" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500 transition" placeholder="Name">
@@ -105,22 +109,18 @@
                         <div><input type="checkbox" id="edit-tra1" value="Travel" class="interest-cb hidden edit-int"><label for="edit-tra1" class="border-2 border-gray-200 dark:border-gray-600 dark:text-gray-300 rounded-full px-3 py-1 text-sm cursor-pointer transition">✈️ Travel</label></div>
                     </div>
                 </div>
-
                 <button onclick="saveEditedProfile()" class="w-full bg-pink-500 text-white font-bold py-4 mt-4 rounded-xl hover:bg-pink-600 shadow-lg transition active:scale-95">Update Profile</button>
             </div>
-
+            
             <div class="w-full max-w-sm mt-10 border-t border-gray-200 dark:border-gray-700 pt-6">
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Blocked Users 🚫</h3>
-                <div id="blocked-users-list" class="space-y-3">
-                    <p class="text-sm text-gray-500">Loading...</p>
-                </div>
+                <div id="blocked-users-list" class="space-y-3"><p class="text-sm text-gray-500">Loading...</p></div>
             </div>
-            
             <button onclick="logoutApp()" class="w-full max-w-sm border-2 border-red-500 text-red-500 font-bold py-3 mt-10 rounded-xl hover:bg-red-50 dark:hover:bg-red-900 transition active:scale-95">Logout</button>
         </div>
     </div>
 
-    <div id="home-screen" class="screen hidden flex-col h-full w-full bg-gray-50 dark:bg-gray-900 relative transition-colors">
+    <div id="home-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 relative transition-colors absolute inset-0 z-40">
         <div id="match-overlay" class="absolute inset-0 bg-black/95 z-50 hidden flex-col justify-center items-center p-6 text-center backdrop-blur-sm">
             <h1 class="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400 mb-2 animate-pulse">Match! 💖</h1>
             <p class="text-white text-lg mb-8">You both liked each other.</p>
@@ -133,8 +133,8 @@
         </div>
 
         <div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex justify-between items-center transition-colors z-10">
-            <h1 class="text-3xl font-black text-pink-500 tracking-tighter">TC.</h1>
-            <div class="flex gap-6 items-center">
+            <h1 class="text-2xl font-black text-pink-500 tracking-tighter">Telugu Connect</h1>
+            <div class="flex gap-4 items-center">
                 <button onclick="toggleDarkMode()" class="text-xl">🌙</button>
                 <button onclick="openSettings()" class="text-xl">⚙️</button>
                 <button onclick="openChatList()" class="text-gray-600 dark:text-gray-300 font-bold flex items-center gap-1">
@@ -145,18 +145,7 @@
 
         <div class="flex-1 p-4 flex justify-center items-center relative overflow-hidden" id="feed-container">
             <div id="profile-card" class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden relative transition-all">
-                <div id="card-image-bg" class="h-[450px] bg-cover bg-center flex items-center justify-center text-gray-500 bg-gray-200"></div>
-                <div class="p-6 absolute bottom-0 w-full bg-gradient-to-t from-black via-black/80 to-transparent pt-20">
-                    <div class="flex justify-between items-end">
-                        <div>
-                            <h2 id="card-name-age" class="text-3xl font-black text-white drop-shadow-md">Loading...</h2>
-                            <p id="card-city" class="text-gray-200 font-medium drop-shadow-md"></p>
-                        </div>
-                        <div id="card-match-badge" class="hidden bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-lg"></div>
-                    </div>
-                    <div id="card-interests" class="flex gap-2 mt-3 flex-wrap"></div>
                 </div>
-            </div>
         </div>
 
         <div class="p-6 flex justify-center gap-8 mb-6 z-10" id="action-buttons-layer">
@@ -165,7 +154,7 @@
         </div>
     </div>
 
-    <div id="chat-list-screen" class="screen hidden flex-col h-full w-full bg-white dark:bg-gray-900 overflow-y-auto">
+    <div id="chat-list-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
         <div class="bg-[#075e54] text-white p-4 shadow-md flex items-center gap-4 z-10 sticky top-0">
             <button onclick="switchScreen('home-screen')" class="font-bold text-2xl active:scale-90 transition">&larr;</button>
             <h1 class="text-xl font-bold">Your Matches</h1>
@@ -173,32 +162,30 @@
         <div id="chat-list-container" class="flex-1 divide-y divide-gray-100 dark:divide-gray-800"></div>
     </div>
 
-    <div id="chat-screen" class="screen hidden flex-col h-full w-full bg-white relative">
+    <div id="chat-screen" class="screen hidden flex-col w-full bg-white relative absolute inset-0 z-50">
         <div class="bg-[#075e54] text-white p-4 shadow-md flex items-center gap-3 z-10">
             <button onclick="exitChat()" class="font-bold text-2xl active:scale-90 transition">&larr;</button>
             <div id="chat-header-pic" class="w-10 h-10 rounded-full bg-gray-300 bg-cover bg-center shadow-sm"></div>
             <div class="flex-1">
-                <h1 id="chat-header-name" class="font-bold leading-tight">Chat</h1>
-                <p id="chat-header-status" class="text-xs text-gray-200">Connecting...</p>
+                <h1 id="chat-header-name" class="font-bold leading-tight flex items-center gap-2">Chat</h1>
+                <p id="chat-header-status" class="text-xs text-gray-200 font-medium h-4">Connecting...</p>
             </div>
             <button onclick="blockUser()" class="text-red-400 hover:text-red-300 font-bold text-xl active:scale-90 transition" title="Block User">🚫</button>
         </div>
 
-        <div class="flex-1 p-4 overflow-y-auto chat-bg flex flex-col gap-2 relative" id="chat-messages-container">
-            </div>
+        <div class="flex-1 p-4 overflow-y-auto chat-bg flex flex-col gap-2 relative" id="chat-messages-container"></div>
 
-        <div id="icebreakers-layer" class="hidden flex gap-2 px-2 pb-2 bg-[#f0f0f0] overflow-x-auto whitespace-nowrap pt-2">
+        <div id="icebreakers-layer" class="hidden flex gap-2 px-2 pb-2 bg-[#f0f0f0] overflow-x-auto whitespace-nowrap pt-2 border-t border-gray-200">
             <button onclick="sendIcebreaker('Hey! 👋')" class="bg-white border border-gray-200 text-sm px-4 py-1.5 rounded-full shadow-sm text-pink-500 font-semibold flex-shrink-0">Hey! 👋</button>
             <button onclick="sendIcebreaker('Coffee or Tea? ☕')" class="bg-white border border-gray-200 text-sm px-4 py-1.5 rounded-full shadow-sm text-pink-500 font-semibold flex-shrink-0">Coffee or Tea? ☕</button>
             <button onclick="sendIcebreaker('What is your fav movie? 🍿')" class="bg-white border border-gray-200 text-sm px-4 py-1.5 rounded-full shadow-sm text-pink-500 font-semibold flex-shrink-0">Fav Movie? 🍿</button>
         </div>
 
-        <div class="p-2 bg-[#f0f0f0] flex gap-2 items-center pb-4">
-            <input type="text" id="msg-input" placeholder="Message..." class="flex-1 bg-white rounded-full px-5 py-3.5 outline-none shadow-sm text-gray-800 focus:ring-2 focus:ring-[#128C7E] transition">
-            <button onclick="sendLiveMessage()" class="bg-[#128C7E] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] transition active:scale-90">➤</button>
+        <div class="p-3 bg-[#f0f0f0] flex gap-2 items-center border-t border-gray-300 w-full shrink-0 z-50">
+            <input type="text" id="msg-input" oninput="handleTyping()" placeholder="Type a message..." class="flex-1 bg-white rounded-full px-5 py-3 outline-none shadow-sm text-gray-800 focus:ring-2 focus:ring-[#128C7E] transition">
+            <button onclick="sendLiveMessage()" class="bg-[#128C7E] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] transition active:scale-90 shrink-0">➤</button>
         </div>
     </div>
-
 <script>
         function switchScreen(targetScreenId) {
             document.querySelectorAll('.screen').forEach(s => { s.classList.add('hidden'); s.classList.remove('flex'); });
@@ -209,7 +196,7 @@
         window.showToast = (msg, type = 'success') => {
             const toast = document.getElementById('toast-msg');
             toast.innerText = msg;
-            toast.className = `toast-animate fixed top-[40px] left-1/2 transform -translate-x-1/2 z-[100] px-6 py-3 rounded-full text-white font-bold shadow-2xl text-center min-w-[250px] ${type === 'error' ? 'bg-red-500' : 'bg-gray-900'}`;
+            toast.className = `toast-animate fixed top-[40px] left-1/2 transform -translate-x-1/2 z-[999] px-6 py-3 rounded-full text-white font-bold shadow-2xl text-center min-w-[250px] ${type === 'error' ? 'bg-red-500' : 'bg-gray-900'}`;
             toast.classList.remove('hidden');
             setTimeout(() => { toast.classList.add('hidden'); }, 3000);
         }
@@ -221,7 +208,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, serverTimestamp, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-storage.js";
 
         const firebaseConfig = {
@@ -237,22 +224,23 @@
         window.auth = getAuth(app); window.db = getFirestore(app); window.storage = getStorage(app); window.provider = new GoogleAuthProvider();
 
         window.currentUserData = null; window.feedProfiles = []; window.currentFeedIndex = 0;   
-        window.matchedProfileData = null; window.activeChatId = null; window.unsubscribeChatListener = null; window.unsubscribeStatusListener = null;
+        window.matchedProfileData = null; window.activeChatId = null; 
+        window.unsubscribeChatListener = null; window.unsubscribeStatusListener = null; window.unsubscribeTypingListener = null;
         window.tempUploadedPhotoUrl = null; window.blockedUidList = []; 
+        let typingTimeout = null;
 
         onAuthStateChanged(window.auth, async (user) => {
             if (user) {
                 await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true });
                 
                 const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
-                window.blockedUidList = [];
-                blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
+                window.blockedUidList = []; blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
 
                 const userSnap = await getDoc(doc(window.db, "Users", user.uid));
                 if (userSnap.exists() && userSnap.data().age) {
                     window.currentUserData = { ...userSnap.data(), uid: user.uid };
                     window.showToast("Welcome back, " + window.currentUserData.name + "!");
-                    switchScreen('home-screen'); window.fetchDiscoverFeed();
+                    switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
                 } else {
                     window.currentUserData = { uid: user.uid, name: user.displayName, email: user.email, photoURL: user.photoURL };
                     switchScreen('profile-setup-screen');
@@ -265,24 +253,26 @@
         window.handleGoogleLogin = async () => { try { await signInWithPopup(window.auth, window.provider); } catch (e) { window.showToast("Login Failed", "error"); } };
         window.logoutApp = async () => { await signOut(window.auth); window.showToast("Logged out!"); };
 
+// PHOTO UPLOAD WITH BETTER ERROR LOGGING
         window.handlePhotoUpload = async (event, source) => {
             const file = event.target.files[0]; if(!file) return;
-            window.showToast("Uploading...", "success");
+            window.showToast("Uploading photo...", "success");
             try {
                 const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
                 await uploadBytes(storageRef, file);
                 window.tempUploadedPhotoUrl = await getDownloadURL(storageRef);
                 const id = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
                 document.getElementById(id).style.backgroundImage = `url('${window.tempUploadedPhotoUrl}')`;
-                window.showToast("Photo updated!", "success");
-            } catch (e) { window.showToast("Upload failed.", "error"); }
+                window.showToast("Photo updated successfully!", "success");
+            } catch (e) { 
+                window.showToast("Upload failed: Check Storage Rules", "error"); 
+                console.error("Storage Error: ", e);
+            }
         };
- // HELPER: Get selected interests
+
         const getSelectedInterests = (containerId) => {
             const cbs = document.querySelectorAll(`#${containerId} .interest-cb`);
-            const selected = [];
-            cbs.forEach(cb => { if(cb.checked) selected.push(cb.value); });
-            return selected;
+            const selected = []; cbs.forEach(cb => { if(cb.checked) selected.push(cb.value); }); return selected;
         };
 
         window.saveProfileSetup = async () => {
@@ -295,14 +285,13 @@
 
             if (!name || !username || !age || !gender || !city) { window.showToast("Fields required!", "error"); return; }
             if (age < 18) { window.showToast("Strictly 18+!", "error"); return; }
-
             const finalPicUrl = window.tempUploadedPhotoUrl || window.currentUserData.photoURL || 'https://via.placeholder.com/150';
 
             try {
                 const payload = { uid: window.currentUserData.uid, name, username, age, gender, city, interests, email: window.currentUserData.email||"", profilePicUrl: finalPicUrl, bio: "Hey there!", online: true };
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), payload, { merge: true });
                 window.currentUserData = payload;
-                switchScreen('home-screen'); window.fetchDiscoverFeed();
+                switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
             } catch (e) { window.showToast("Error", "error"); }
         };
 
@@ -312,12 +301,8 @@
             document.getElementById('edit-bio').value = window.currentUserData.bio || '';
             document.getElementById('edit-pic-preview').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
             
-            // Check existing interests
             const myInts = window.currentUserData.interests || [];
-            document.querySelectorAll('.edit-int').forEach(cb => {
-                cb.checked = myInts.includes(cb.value);
-            });
-
+            document.querySelectorAll('.edit-int').forEach(cb => { cb.checked = myInts.includes(cb.value); });
             window.loadBlockedUsers(); switchScreen('settings-screen');
         };
 
@@ -347,14 +332,13 @@
                     const data = targetSnap.data();
                     const item = document.createElement('div');
                     item.className = "flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-3 rounded-xl";
-                    item.innerHTML = `
-                        <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-cover bg-center shadow" style="background-image: url('${data.profilePicUrl}')"></div><span class="font-bold text-gray-800 dark:text-white">${data.name}</span></div>
-                        <button onclick="unblockUser('${targetUid}')" class="text-xs bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold">Unblock</button>`;
+                    item.innerHTML = `<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-cover bg-center shadow" style="background-image: url('${data.profilePicUrl}')"></div><span class="font-bold text-gray-800 dark:text-white">${data.name}</span></div><button onclick="unblockUser('${targetUid}')" class="text-xs bg-red-100 text-red-600 px-3 py-2 rounded-lg font-bold">Unblock</button>`;
                     container.appendChild(item);
                 }
             }
         };
-window.unblockUser = async (targetUid) => {
+
+        window.unblockUser = async (targetUid) => {
             try {
                 await deleteDoc(doc(window.db, "Blocks", `${window.currentUserData.uid}_${targetUid}`));
                 window.blockedUidList = window.blockedUidList.filter(id => id !== targetUid);
@@ -374,44 +358,114 @@ window.unblockUser = async (targetUid) => {
         };
 
         window.renderCurrentProfile = () => {
+            const card = document.getElementById('profile-card');
+            card.style.transition = 'none';
+            card.style.transform = `translateX(0px) rotate(0deg)`; 
+
             if (window.feedProfiles.length === 0 || window.currentFeedIndex >= window.feedProfiles.length) {
-                document.getElementById('profile-card').innerHTML = `<div class="p-10 text-center flex flex-col justify-center items-center h-full"><h3 class="text-xl font-bold dark:text-white">No Profiles Left! 🌍</h3></div>`;
+                card.innerHTML = `<div class="p-10 text-center flex flex-col justify-center items-center h-[450px]"><h3 class="text-xl font-bold dark:text-white">No Profiles Left! 🌍</h3></div>`;
                 document.getElementById('action-buttons-layer').classList.add('hidden'); return;
             }
             const p = window.feedProfiles[window.currentFeedIndex];
-            document.getElementById('card-image-bg').style.backgroundImage = `url('${p.profilePicUrl}')`;
-            document.getElementById('card-name-age').innerText = `${p.name}, ${p.age}`;
-            document.getElementById('card-city').innerText = p.city;
+            
+            card.innerHTML = `
+                <div id="card-image-bg" class="h-[450px] bg-cover bg-center flex items-center justify-center text-gray-500 bg-gray-200 select-none relative" style="background-image: url('${p.profilePicUrl}')">
+                    <div id="stamp-like" class="absolute top-12 left-6 border-4 border-green-500 text-green-500 font-extrabold text-4xl px-3 py-1 rounded-xl transform -rotate-12 opacity-0 z-50 pointer-events-none tracking-widest bg-white/20">LIKE</div>
+                    <div id="stamp-nope" class="absolute top-12 right-6 border-4 border-red-500 text-red-500 font-extrabold text-4xl px-3 py-1 rounded-xl transform rotate-12 opacity-0 z-50 pointer-events-none tracking-widest bg-white/20">NOPE</div>
+                </div>
+                <div class="p-6 absolute bottom-0 w-full bg-gradient-to-t from-black via-black/80 to-transparent pt-20 pointer-events-none">
+                    <div class="flex justify-between items-end">
+                        <div><h2 id="card-name-age" class="text-3xl font-black text-white drop-shadow-md">${p.name}, ${p.age}</h2><p id="card-city" class="text-gray-200 font-medium drop-shadow-md">${p.city}</p></div>
+                        <div id="card-match-badge" class="hidden bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-lg"></div>
+                    </div>
+                    <div id="card-interests" class="flex gap-2 mt-3 flex-wrap"></div>
+                </div>`;
+
             document.getElementById('action-buttons-layer').classList.remove('hidden');
 
-            // SMART MATCH % LOGIC
             const matchBadge = document.getElementById('card-match-badge');
-            const theirInts = p.interests || [];
-            const myInts = window.currentUserData.interests || [];
-            let common = 0;
-            myInts.forEach(i => { if(theirInts.includes(i)) common++; });
-            
+            const theirInts = p.interests || []; const myInts = window.currentUserData.interests || [];
+            let common = 0; myInts.forEach(i => { if(theirInts.includes(i)) common++; });
             if(myInts.length > 0 && common > 0) {
                 let percent = Math.round((common / Math.max(myInts.length, theirInts.length)) * 100);
-                matchBadge.innerText = `${percent}% Match 🔥`;
-                matchBadge.classList.remove('hidden');
-            } else {
-                matchBadge.classList.add('hidden');
+                matchBadge.innerText = `${percent}% Match 🔥`; matchBadge.classList.remove('hidden');
             }
 
-            // Tags display
             const tagContainer = document.getElementById('card-interests');
-            tagContainer.innerHTML = '';
             theirInts.forEach(int => {
-                const tag = document.createElement('span');
-                tag.className = "bg-white/20 text-white text-[10px] px-2 py-1 rounded-full border border-white/30";
-                tag.innerText = int;
-                tagContainer.appendChild(tag);
+                const tag = document.createElement('span'); tag.className = "bg-white/20 text-white text-[10px] px-2 py-1 rounded-full border border-white/30"; tag.innerText = int; tagContainer.appendChild(tag);
             });
         };
+// CLEAN TINDER SWIPE PHYSICS WITH STAMPS
+        function setupSwipeListeners() {
+            const card = document.getElementById('profile-card');
+            let startX = 0, currentX = 0, isDragging = false;
+            
+            card.addEventListener('touchstart', (e) => {
+                startX = e.touches[0].clientX; isDragging = true; card.style.transition = 'none';
+            });
+            card.addEventListener('touchmove', (e) => {
+                if(!isDragging) return;
+                currentX = e.touches[0].clientX;
+                const deltaX = currentX - startX;
+                card.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.05}deg)`;
+                
+                // Stamp opacity based on drag distance
+                let stampLike = document.getElementById('stamp-like');
+                let stampNope = document.getElementById('stamp-nope');
+                if(stampLike && stampNope) {
+                    if(deltaX > 0) {
+                        stampLike.style.opacity = Math.min(deltaX / 100, 1);
+                        stampNope.style.opacity = 0;
+                    } else {
+                        stampNope.style.opacity = Math.min(Math.abs(deltaX) / 100, 1);
+                        stampLike.style.opacity = 0;
+                    }
+                }
+            });
+            card.addEventListener('touchend', (e) => {
+                if(!isDragging) return;
+                isDragging = false;
+                const deltaX = currentX - startX;
+                card.style.transition = 'transform 0.3s ease';
+                
+                let stampLike = document.getElementById('stamp-like');
+                let stampNope = document.getElementById('stamp-nope');
+
+                if(deltaX > 100) {
+                    card.style.transform = `translateX(1000px) rotate(30deg)`; 
+                    if(stampLike) stampLike.style.opacity = 1;
+                    setTimeout(() => window.handleAction('like'), 300);
+                } else if (deltaX < -100) {
+                    card.style.transform = `translateX(-1000px) rotate(-30deg)`; 
+                    if(stampNope) stampNope.style.opacity = 1;
+                    setTimeout(() => window.handleAction('pass'), 300);
+                } else {
+                    card.style.transform = `translateX(0px) rotate(0deg)`; // Snap back
+                    if(stampLike) stampLike.style.opacity = 0;
+                    if(stampNope) stampNope.style.opacity = 0;
+                }
+            });
+        }
 
         window.handleAction = async (actionType) => {
             const target = window.feedProfiles[window.currentFeedIndex];
+            
+            const card = document.getElementById('profile-card');
+            let stampLike = document.getElementById('stamp-like');
+            let stampNope = document.getElementById('stamp-nope');
+
+            if (card.style.transform === 'translateX(0px) rotate(0deg)' || card.style.transform === '') {
+                card.style.transition = 'transform 0.3s ease';
+                if(actionType === 'like') {
+                    card.style.transform = `translateX(1000px) rotate(30deg)`;
+                    if(stampLike) stampLike.style.opacity = 1;
+                } else {
+                    card.style.transform = `translateX(-1000px) rotate(-30deg)`;
+                    if(stampNope) stampNope.style.opacity = 1;
+                }
+            }
+
             if (actionType === 'like') {
                 const myUid = window.currentUserData.uid; const targetUid = target.uid;
                 await setDoc(doc(window.db, "Likes", `${myUid}_${targetUid}`), { from: myUid, to: targetUid });
@@ -423,10 +477,12 @@ window.unblockUser = async (targetUid) => {
                     window.matchedProfileData = target;
                     document.getElementById('match-my-pic').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
                     document.getElementById('match-their-pic').style.backgroundImage = `url('${target.profilePicUrl}')`;
-                    document.getElementById('match-overlay').classList.remove('hidden'); document.getElementById('match-overlay').classList.add('flex');
+                    setTimeout(() => {
+                        document.getElementById('match-overlay').classList.remove('hidden'); document.getElementById('match-overlay').classList.add('flex');
+                    }, 300);
                 }
             }
-            window.currentFeedIndex++; window.renderCurrentProfile();
+            setTimeout(() => { window.currentFeedIndex++; window.renderCurrentProfile(); }, 300);
         };
 
         window.closeMatchOverlay = () => { document.getElementById('match-overlay').classList.add('hidden'); document.getElementById('match-overlay').classList.remove('flex'); };
@@ -459,7 +515,8 @@ window.unblockUser = async (targetUid) => {
         };
 
         window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targetProfile; window.goToChatFromMatch(); };
-window.goToChatFromMatch = () => {
+
+        window.goToChatFromMatch = () => {
             window.closeMatchOverlay();
             if(window.matchedProfileData) {
                 const targetUid = window.matchedProfileData.uid;
@@ -473,9 +530,24 @@ window.goToChatFromMatch = () => {
                     if(docSnap.exists()){
                         const isOnline = docSnap.data().online;
                         document.getElementById('chat-header-status').innerText = isOnline ? 'Online' : 'Offline';
-                        document.getElementById('chat-header-status').className = isOnline ? 'text-xs text-green-300 font-bold' : 'text-xs text-gray-300';
+                        document.getElementById('chat-header-status').className = isOnline ? 'text-xs text-green-300 font-bold' : 'text-xs text-gray-300 font-medium h-4';
                     }
                 });
+
+                window.unsubscribeTypingListener = onSnapshot(doc(window.db, "Chats", window.activeChatId), (docSnap) => {
+                    if(docSnap.exists()) {
+                        const isTyping = docSnap.data()[`typing_${targetUid}`];
+                        if(isTyping) {
+                            document.getElementById('chat-header-status').innerText = "... is typing";
+                            document.getElementById('chat-header-status').className = "text-xs text-pink-300 font-bold italic animate-pulse h-4";
+                        } else {
+                            const wasOnline = document.getElementById('chat-header-status').className.includes('green');
+                            document.getElementById('chat-header-status').innerText = wasOnline ? 'Online' : 'Offline';
+                            document.getElementById('chat-header-status').className = wasOnline ? 'text-xs text-green-300 font-bold' : 'text-xs text-gray-300 font-medium h-4';
+                        }
+                    }
+                });
+
                 window.listenToMessages();
             }
             switchScreen('chat-screen');
@@ -488,22 +560,24 @@ window.goToChatFromMatch = () => {
                 const icebreakers = document.getElementById('icebreakers-layer');
                 container.innerHTML = `<div class="text-center text-gray-600 bg-yellow-100/90 mx-auto px-4 py-2 rounded-lg text-xs mt-3 shadow-sm font-medium">🔒 Messages are end-to-end encrypted</div>`; 
 
-                // Hide or Show Icebreakers
-                if(snapshot.empty) {
-                    icebreakers.classList.remove('hidden');
-                } else {
-                    icebreakers.classList.add('hidden');
-                }
+                if(snapshot.empty) icebreakers.classList.remove('hidden');
+                else icebreakers.classList.add('hidden');
 
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data(); const isMe = data.senderId === window.currentUserData.uid;
                     let timeString = "";
                     if(data.timestamp) { timeString = data.timestamp.toDate().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
 
+                    if(!isMe && data.status !== 'read') { updateDoc(docSnap.ref, { status: 'read' }); }
+
+                    let ticks = '<span class="text-gray-400 text-[10px]">✓</span>';
+                    if (data.status === 'read') { ticks = '<span class="text-blue-500 text-xs font-bold shadow-sm">✓✓</span>'; } 
+                    else if (data.status === 'sent') { ticks = '<span class="text-gray-500 text-xs font-bold">✓✓</span>'; }
+
                     const msgBubble = document.createElement('div');
                     if (isMe) {
                         msgBubble.className = "bg-[#dcf8c6] p-2 px-3 rounded-xl rounded-tr-none self-end max-w-[85%] shadow-sm text-sm";
-                        msgBubble.innerHTML = `<span class="text-gray-800 leading-relaxed">${data.text}</span><span class="text-[10px] text-gray-500 ml-3 float-right mt-3 font-semibold">${timeString} <span class="text-blue-500 text-xs">✓✓</span></span>`;
+                        msgBubble.innerHTML = `<span class="text-gray-800 leading-relaxed">${data.text}</span><span class="text-[10px] text-gray-500 ml-3 float-right mt-3 font-semibold">${timeString} <span class="ml-1">${ticks}</span></span>`;
                     } else {
                         msgBubble.className = "bg-white p-2 px-3 rounded-xl rounded-tl-none self-start max-w-[85%] shadow-sm text-sm";
                         msgBubble.innerHTML = `<span class="text-gray-800 leading-relaxed">${data.text}</span><span class="text-[10px] text-gray-400 ml-3 float-right mt-3 font-semibold">${timeString}</span>`;
@@ -513,18 +587,24 @@ window.goToChatFromMatch = () => {
                 setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
             });
         };
-// ICEBREAKER SEND
-        window.sendIcebreaker = (text) => {
-            document.getElementById('msg-input').value = text;
-            window.sendLiveMessage();
+window.handleTyping = async () => {
+            if(!window.activeChatId) return;
+            await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: true }, { merge: true });
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(async () => {
+                await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: false }, { merge: true });
+            }, 1500);
         };
+
+        window.sendIcebreaker = (text) => { document.getElementById('msg-input').value = text; window.sendLiveMessage(); };
 
         window.sendLiveMessage = async () => {
             const input = document.getElementById('msg-input'); const text = input.value.trim();
             if(!text || !window.activeChatId) return;
             try {
-                await addDoc(collection(window.db, "Chats", window.activeChatId, "Messages"), { senderId: window.currentUserData.uid, text: text, timestamp: serverTimestamp() });
+                await addDoc(collection(window.db, "Chats", window.activeChatId, "Messages"), { senderId: window.currentUserData.uid, text: text, timestamp: serverTimestamp(), status: 'sent' });
                 input.value = ""; 
+                await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: false }, { merge: true });
             } catch (err) { window.showToast("Failed to send", "error"); }
         };
 
@@ -542,6 +622,7 @@ window.goToChatFromMatch = () => {
         window.exitChat = () => { 
             if(window.unsubscribeChatListener) window.unsubscribeChatListener(); 
             if(window.unsubscribeStatusListener) window.unsubscribeStatusListener();
+            if(window.unsubscribeTypingListener) window.unsubscribeTypingListener();
             window.openChatList(); 
         };
     </script>
