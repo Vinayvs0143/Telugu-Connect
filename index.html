@@ -11,19 +11,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = { darkMode: 'class' }
+        // DARK MODE PERSISTENCE (Runs immediately to prevent flashing)
+        if (localStorage.getItem('tc_theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
     </script>
     <style>
-        /* Modern Mobile Viewport Fix */
         body { font-family: sans-serif; -webkit-tap-highlight-color: transparent; height: 100dvh; }
         .screen { transition: opacity 0.3s ease; height: 100dvh; }
-        
         .chat-bg { background-color: #efeae2; background-image: url('https://www.transparenttextures.com/patterns/cubes.png'); }
         @keyframes slideDown { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
         .toast-animate { animation: slideDown 0.4s ease forwards; }
         .interest-cb:checked + label { background-color: #ec4899; color: white; border-color: #ec4899; }
-        
-        /* Smooth Swipe Animations */
-        #profile-card { touch-action: none; will-change: transform; transition: transform 0.3s ease; }
+        #profile-card { touch-action: none; will-change: transform, opacity; transition: transform 0.3s ease, opacity 0.3s ease; }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 w-screen overflow-hidden transition-colors duration-300 relative">
@@ -43,84 +43,63 @@
             <button onclick="handleGoogleLogin()" class="w-full bg-black text-white font-bold py-4 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-gray-800 transition active:scale-95 shadow-lg">
                 <span>Continue with Google</span>
             </button>
-            <p class="text-xs text-gray-500 mt-5">By logging in, you agree to our terms.</p>
         </div>
     </div>
 
     <div id="profile-setup-screen" class="screen hidden flex-col justify-center items-center w-full bg-gradient-to-r from-pink-500 to-orange-400 p-6 overflow-y-auto absolute inset-0 z-40">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-sm my-auto">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-2xl w-full max-w-sm my-auto mt-10">
             <h2 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white text-center">Your Profile</h2>
+            
             <div class="flex flex-col items-center mb-6">
-                <div id="setup-pic-preview" class="w-24 h-24 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center flex items-center justify-center overflow-hidden relative shadow-md">
-                    <span class="text-xs text-gray-500 absolute pointer-events-none bg-white/70 px-1 rounded z-0">Upload</span>
-                    <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'setup')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <div id="setup-pic-preview" class="w-28 h-28 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center flex items-center justify-center overflow-hidden relative shadow-md">
+                    <span class="text-xs text-gray-800 font-bold bg-white/80 px-2 py-1 rounded-md z-0 pointer-events-none">Choose Photo</span>
+                    <input type="file" accept="image/*" onchange="handleInstantPhotoPreview(event, 'setup')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                 </div>
             </div>
+
             <div class="space-y-4">
-                <input type="text" id="setup-name" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500 transition" placeholder="Display Name">
-                <input type="text" id="setup-username" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500 transition" placeholder="Username (no spaces)">
+                <input type="text" id="setup-name" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Display Name">
+                <input type="text" id="setup-username" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Username (no spaces)">
                 <div class="flex gap-2">
-                    <input type="number" id="setup-age" min="18" max="99" class="w-1/2 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500 transition" placeholder="Age">
-                    <select id="setup-gender" class="w-1/2 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500 transition">
+                    <input type="number" id="setup-age" min="18" max="99" class="w-1/2 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Age">
+                    <select id="setup-gender" class="w-1/2 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500">
                         <option value="">Gender</option>
                         <option value="Boy">Boy</option>
                         <option value="Girl">Girl</option>
                     </select>
                 </div>
-                <input type="text" id="setup-city" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500 transition" placeholder="City (e.g., Hyderabad)">
-                
-                <div>
-                    <label class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-2 block">Interests (Select any)</label>
-                    <div class="flex flex-wrap gap-2" id="setup-interests">
-                        <div><input type="checkbox" id="int-tech1" value="Tech" class="interest-cb hidden"><label for="int-tech1" class="border-2 border-gray-200 dark:border-gray-600 dark:text-gray-300 rounded-full px-3 py-1 text-sm cursor-pointer transition">💻 Tech</label></div>
-                        <div><input type="checkbox" id="int-mov1" value="Movies" class="interest-cb hidden"><label for="int-mov1" class="border-2 border-gray-200 dark:border-gray-600 dark:text-gray-300 rounded-full px-3 py-1 text-sm cursor-pointer transition">🍿 Movies</label></div>
-                        <div><input type="checkbox" id="int-mus1" value="Music" class="interest-cb hidden"><label for="int-mus1" class="border-2 border-gray-200 dark:border-gray-600 dark:text-gray-300 rounded-full px-3 py-1 text-sm cursor-pointer transition">🎵 Music</label></div>
-                        <div><input type="checkbox" id="int-spo1" value="Sports" class="interest-cb hidden"><label for="int-spo1" class="border-2 border-gray-200 dark:border-gray-600 dark:text-gray-300 rounded-full px-3 py-1 text-sm cursor-pointer transition">⚽ Sports</label></div>
-                        <div><input type="checkbox" id="int-tra1" value="Travel" class="interest-cb hidden"><label for="int-tra1" class="border-2 border-gray-200 dark:border-gray-600 dark:text-gray-300 rounded-full px-3 py-1 text-sm cursor-pointer transition">✈️ Travel</label></div>
-                    </div>
-                </div>
+                <input type="text" id="setup-city" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="City (e.g., Hyderabad)">
             </div>
-            <button onclick="saveProfileSetup()" class="w-full bg-pink-500 text-white font-bold py-4 mt-6 rounded-xl hover:bg-pink-600 transition shadow-lg active:scale-95">Save & Enter</button>
+            <button onclick="saveProfileSetup()" class="w-full bg-pink-500 text-white font-bold py-4 mt-6 rounded-xl hover:bg-pink-600 shadow-lg active:scale-95">Save & Enter</button>
         </div>
     </div>
-
-    <div id="settings-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
+<div id="settings-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
         <div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex items-center gap-4 z-10 sticky top-0">
             <button onclick="switchScreen('home-screen')" class="text-pink-600 font-bold text-xl">&larr;</button>
             <h1 class="text-xl font-bold text-gray-800 dark:text-white">Settings</h1>
         </div>
         <div class="p-6 flex flex-col items-center pb-20">
             <div id="edit-pic-preview" class="w-32 h-32 rounded-full bg-gray-200 border-4 border-pink-500 bg-cover bg-center mb-6 flex items-center justify-center overflow-hidden relative shadow-lg">
-                <span class="text-xs text-white bg-black/50 px-2 py-1 rounded absolute pointer-events-none z-0">Change</span>
-                <input type="file" accept="image/*" onchange="handlePhotoUpload(event, 'edit')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                <span class="text-xs text-gray-800 font-bold bg-white/80 px-2 py-1 rounded-md z-0 pointer-events-none">Change Photo</span>
+                <input type="file" accept="image/*" onchange="handleInstantPhotoPreview(event, 'edit')" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
             </div>
+            
             <div class="w-full max-w-sm space-y-4">
-                <input type="text" id="edit-name" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500 transition" placeholder="Name">
-                <input type="text" id="edit-city" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500 transition" placeholder="City">
-                <textarea id="edit-bio" rows="3" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500 transition" placeholder="Bio"></textarea>
-                
-                <div>
-                    <label class="text-xs text-gray-500 dark:text-gray-400 font-bold mb-2 block">My Interests</label>
-                    <div class="flex flex-wrap gap-2" id="edit-interests">
-                        <div><input type="checkbox" id="edit-tech1" value="Tech" class="interest-cb hidden edit-int"><label for="edit-tech1" class="border-2 border-gray-200 dark:border-gray-600 dark:text-gray-300 rounded-full px-3 py-1 text-sm cursor-pointer transition">💻 Tech</label></div>
-                        <div><input type="checkbox" id="edit-mov1" value="Movies" class="interest-cb hidden edit-int"><label for="edit-mov1" class="border-2 border-gray-200 dark:border-gray-600 dark:text-gray-300 rounded-full px-3 py-1 text-sm cursor-pointer transition">🍿 Movies</label></div>
-                        <div><input type="checkbox" id="edit-mus1" value="Music" class="interest-cb hidden edit-int"><label for="edit-mus1" class="border-2 border-gray-200 dark:border-gray-600 dark:text-gray-300 rounded-full px-3 py-1 text-sm cursor-pointer transition">🎵 Music</label></div>
-                        <div><input type="checkbox" id="edit-spo1" value="Sports" class="interest-cb hidden edit-int"><label for="edit-spo1" class="border-2 border-gray-200 dark:border-gray-600 dark:text-gray-300 rounded-full px-3 py-1 text-sm cursor-pointer transition">⚽ Sports</label></div>
-                        <div><input type="checkbox" id="edit-tra1" value="Travel" class="interest-cb hidden edit-int"><label for="edit-tra1" class="border-2 border-gray-200 dark:border-gray-600 dark:text-gray-300 rounded-full px-3 py-1 text-sm cursor-pointer transition">✈️ Travel</label></div>
-                    </div>
-                </div>
-                <button onclick="saveEditedProfile()" class="w-full bg-pink-500 text-white font-bold py-4 mt-4 rounded-xl hover:bg-pink-600 shadow-lg transition active:scale-95">Update Profile</button>
+                <input type="text" id="edit-name" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Name">
+                <input type="text" id="edit-city" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="City">
+                <textarea id="edit-bio" rows="3" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Bio"></textarea>
+                <button onclick="saveEditedProfile()" class="w-full bg-pink-500 text-white font-bold py-4 mt-4 rounded-xl hover:bg-pink-600 shadow-lg active:scale-95">Update Profile</button>
             </div>
             
             <div class="w-full max-w-sm mt-10 border-t border-gray-200 dark:border-gray-700 pt-6">
                 <h3 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Blocked Users 🚫</h3>
                 <div id="blocked-users-list" class="space-y-3"><p class="text-sm text-gray-500">Loading...</p></div>
             </div>
-            <button onclick="logoutApp()" class="w-full max-w-sm border-2 border-red-500 text-red-500 font-bold py-3 mt-10 rounded-xl hover:bg-red-50 dark:hover:bg-red-900 transition active:scale-95">Logout</button>
+            <button onclick="logoutApp()" class="w-full max-w-sm border-2 border-red-500 text-red-500 font-bold py-3 mt-10 rounded-xl hover:bg-red-50 dark:hover:bg-red-900 active:scale-95">Logout</button>
         </div>
     </div>
 
-    <div id="home-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 relative transition-colors absolute inset-0 z-40">
+    <div id="home-screen" class="screen hidden flex-col w-full bg-gray-50 dark:bg-gray-900 relative transition-colors absolute inset-0 z-30">
         <div id="match-overlay" class="absolute inset-0 bg-black/95 z-50 hidden flex-col justify-center items-center p-6 text-center backdrop-blur-sm">
             <h1 class="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400 mb-2 animate-pulse">Match! 💖</h1>
             <p class="text-white text-lg mb-8">You both liked each other.</p>
@@ -132,29 +111,27 @@
             <button onclick="closeMatchOverlay()" class="text-gray-300 font-medium">Keep Swiping</button>
         </div>
 
-        <div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex justify-between items-center transition-colors z-10">
+        <div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex justify-between items-center z-10">
             <h1 class="text-2xl font-black text-pink-500 tracking-tighter">Telugu Connect</h1>
             <div class="flex gap-4 items-center">
-                <button onclick="toggleDarkMode()" class="text-xl">🌙</button>
-                <button onclick="openSettings()" class="text-xl">⚙️</button>
-                <button onclick="openChatList()" class="text-gray-600 dark:text-gray-300 font-bold flex items-center gap-1">
-                    Chats <span class="bg-pink-500 text-white text-[10px] px-2 py-0.5 rounded-full" id="chat-badge">New</span>
-                </button>
+                <button onclick="toggleDarkMode()" class="text-2xl active:scale-75 transition">🌙</button>
+                <button onclick="openSettings()" class="text-2xl active:scale-75 transition">⚙️</button>
+                <button onclick="openChatList()" class="bg-pink-100 dark:bg-gray-700 text-pink-600 dark:text-white px-3 py-1.5 rounded-full font-bold active:scale-95 transition shadow-sm">Chats</button>
             </div>
         </div>
 
         <div class="flex-1 p-4 flex justify-center items-center relative overflow-hidden" id="feed-container">
-            <div id="profile-card" class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden relative transition-all">
+            <div id="profile-card" class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden relative">
                 </div>
         </div>
 
-        <div class="p-6 flex justify-center gap-8 mb-6 z-10" id="action-buttons-layer">
-            <button onclick="handleAction('pass')" class="bg-white dark:bg-gray-800 text-red-500 shadow-xl rounded-full h-16 w-16 text-3xl font-bold hover:bg-red-50 transition transform active:scale-90 flex items-center justify-center border border-gray-100 dark:border-gray-700">✕</button>
-            <button onclick="handleAction('like')" class="bg-gradient-to-r from-pink-500 to-orange-400 text-white shadow-xl rounded-full h-16 w-16 text-3xl font-bold transition transform active:scale-90 flex items-center justify-center">♥</button>
+        <div class="p-6 flex justify-center gap-8 mb-4 z-10" id="action-buttons-layer">
+            <button onclick="handleAction('pass')" class="bg-white dark:bg-gray-800 text-red-500 shadow-xl rounded-full h-16 w-16 text-3xl font-bold active:scale-75 transition border border-gray-100 dark:border-gray-700 flex items-center justify-center">✕</button>
+            <button onclick="handleAction('like')" class="bg-gradient-to-r from-pink-500 to-orange-400 text-white shadow-xl rounded-full h-16 w-16 text-3xl font-bold active:scale-75 transition flex items-center justify-center">♥</button>
         </div>
     </div>
 
-    <div id="chat-list-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
+<div id="chat-list-screen" class="screen hidden flex-col w-full bg-white dark:bg-gray-900 overflow-y-auto absolute inset-0 z-40">
         <div class="bg-[#075e54] text-white p-4 shadow-md flex items-center gap-4 z-10 sticky top-0">
             <button onclick="switchScreen('home-screen')" class="font-bold text-2xl active:scale-90 transition">&larr;</button>
             <h1 class="text-xl font-bold">Your Matches</h1>
@@ -167,23 +144,17 @@
             <button onclick="exitChat()" class="font-bold text-2xl active:scale-90 transition">&larr;</button>
             <div id="chat-header-pic" class="w-10 h-10 rounded-full bg-gray-300 bg-cover bg-center shadow-sm"></div>
             <div class="flex-1">
-                <h1 id="chat-header-name" class="font-bold leading-tight flex items-center gap-2">Chat</h1>
+                <h1 id="chat-header-name" class="font-bold leading-tight">Chat</h1>
                 <p id="chat-header-status" class="text-xs text-gray-200 font-medium h-4">Connecting...</p>
             </div>
-            <button onclick="blockUser()" class="text-red-400 hover:text-red-300 font-bold text-xl active:scale-90 transition" title="Block User">🚫</button>
+            <button onclick="blockUser()" class="text-red-400 hover:text-red-300 font-bold text-xl" title="Block User">🚫</button>
         </div>
 
-        <div class="flex-1 p-4 overflow-y-auto chat-bg flex flex-col gap-2 relative" id="chat-messages-container"></div>
+        <div class="flex-1 p-4 overflow-y-auto chat-bg flex flex-col gap-2" id="chat-messages-container"></div>
 
-        <div id="icebreakers-layer" class="hidden flex gap-2 px-2 pb-2 bg-[#f0f0f0] overflow-x-auto whitespace-nowrap pt-2 border-t border-gray-200">
-            <button onclick="sendIcebreaker('Hey! 👋')" class="bg-white border border-gray-200 text-sm px-4 py-1.5 rounded-full shadow-sm text-pink-500 font-semibold flex-shrink-0">Hey! 👋</button>
-            <button onclick="sendIcebreaker('Coffee or Tea? ☕')" class="bg-white border border-gray-200 text-sm px-4 py-1.5 rounded-full shadow-sm text-pink-500 font-semibold flex-shrink-0">Coffee or Tea? ☕</button>
-            <button onclick="sendIcebreaker('What is your fav movie? 🍿')" class="bg-white border border-gray-200 text-sm px-4 py-1.5 rounded-full shadow-sm text-pink-500 font-semibold flex-shrink-0">Fav Movie? 🍿</button>
-        </div>
-
-        <div class="p-3 bg-[#f0f0f0] flex gap-2 items-center border-t border-gray-300 w-full shrink-0 z-50">
-            <input type="text" id="msg-input" oninput="handleTyping()" placeholder="Type a message..." class="flex-1 bg-white rounded-full px-5 py-3 outline-none shadow-sm text-gray-800 focus:ring-2 focus:ring-[#128C7E] transition">
-            <button onclick="sendLiveMessage()" class="bg-[#128C7E] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] transition active:scale-90 shrink-0">➤</button>
+        <div class="p-3 bg-[#f0f0f0] flex gap-2 items-center border-t border-gray-300 w-full z-50 shrink-0 pb-6">
+            <input type="text" id="msg-input" oninput="handleTyping()" placeholder="Type a message..." class="flex-1 bg-white rounded-full px-5 py-3.5 outline-none shadow-sm text-gray-800 focus:ring-2 focus:ring-[#128C7E]">
+            <button onclick="sendLiveMessage()" class="bg-[#128C7E] text-white rounded-full w-12 h-12 flex items-center justify-center font-bold shadow-md hover:bg-[#075e54] active:scale-90 shrink-0">➤</button>
         </div>
     </div>
 <script>
@@ -201,7 +172,12 @@
             setTimeout(() => { toast.classList.add('hidden'); }, 3000);
         }
 
-        window.toggleDarkMode = () => { document.documentElement.classList.toggle('dark'); }
+        window.toggleDarkMode = () => { 
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('tc_theme', isDark ? 'dark' : 'light'); 
+        }
+        
         window.onload = () => { switchScreen('loading-screen'); };
     </script>
 
@@ -226,15 +202,20 @@
         window.currentUserData = null; window.feedProfiles = []; window.currentFeedIndex = 0;   
         window.matchedProfileData = null; window.activeChatId = null; 
         window.unsubscribeChatListener = null; window.unsubscribeStatusListener = null; window.unsubscribeTypingListener = null;
-        window.tempUploadedPhotoUrl = null; window.blockedUidList = []; 
+        window.pendingPhotoFile = null; window.blockedUidList = []; window.swipedUidList = []; // Prevent repeating profiles
         let typingTimeout = null;
 
         onAuthStateChanged(window.auth, async (user) => {
             if (user) {
                 await setDoc(doc(window.db, "Users", user.uid), { online: true, lastActive: serverTimestamp() }, { merge: true });
                 
+                // Fetch Blocked List
                 const blockSnap = await getDocs(query(collection(window.db, "Blocks"), where("blocker", "==", user.uid)));
                 window.blockedUidList = []; blockSnap.forEach(d => window.blockedUidList.push(d.data().blocked));
+
+                // Fetch My Swipes (Likes and Passes so I don't see them again)
+                const swipeSnap = await getDocs(query(collection(window.db, "Likes"), where("from", "==", user.uid)));
+                window.swipedUidList = []; swipeSnap.forEach(d => window.swipedUidList.push(d.data().to));
 
                 const userSnap = await getDoc(doc(window.db, "Users", user.uid));
                 if (userSnap.exists() && userSnap.data().age) {
@@ -251,28 +232,30 @@
         });
 
         window.handleGoogleLogin = async () => { try { await signInWithPopup(window.auth, window.provider); } catch (e) { window.showToast("Login Failed", "error"); } };
-        window.logoutApp = async () => { await signOut(window.auth); window.showToast("Logged out!"); };
+        window.logoutApp = async () => { await signOut(window.auth); window.showToast("Logged out!"); switchScreen('login-screen'); };
 
-// PHOTO UPLOAD WITH BETTER ERROR LOGGING
-        window.handlePhotoUpload = async (event, source) => {
+ // 1. INSTANT PHOTO PREVIEW USING FILEREADER (No waiting for Firebase)
+        window.handleInstantPhotoPreview = (event, source) => {
             const file = event.target.files[0]; if(!file) return;
-            window.showToast("Uploading photo...", "success");
-            try {
-                const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
-                await uploadBytes(storageRef, file);
-                window.tempUploadedPhotoUrl = await getDownloadURL(storageRef);
+            const reader = new FileReader();
+            reader.onload = (e) => {
                 const id = source === 'edit' ? 'edit-pic-preview' : 'setup-pic-preview';
-                document.getElementById(id).style.backgroundImage = `url('${window.tempUploadedPhotoUrl}')`;
-                window.showToast("Photo updated successfully!", "success");
-            } catch (e) { 
-                window.showToast("Upload failed: Check Storage Rules", "error"); 
-                console.error("Storage Error: ", e);
-            }
+                document.getElementById(id).style.backgroundImage = `url('${e.target.result}')`;
+                window.pendingPhotoFile = file; // Save it to be uploaded on "Save" click
+                window.showToast("Photo selected! Adjust it by saving.", "success");
+            };
+            reader.readAsDataURL(file);
         };
 
-        const getSelectedInterests = (containerId) => {
-            const cbs = document.querySelectorAll(`#${containerId} .interest-cb`);
-            const selected = []; cbs.forEach(cb => { if(cb.checked) selected.push(cb.value); }); return selected;
+        // Upload Helper
+        const uploadPendingPhoto = async () => {
+            if(!window.pendingPhotoFile) return window.currentUserData?.profilePicUrl || 'https://via.placeholder.com/150';
+            window.showToast("Saving your beautiful photo...", "success");
+            const storageRef = ref(window.storage, 'profilePics/' + window.currentUserData.uid + '_' + Date.now());
+            await uploadBytes(storageRef, window.pendingPhotoFile);
+            const url = await getDownloadURL(storageRef);
+            window.pendingPhotoFile = null;
+            return url;
         };
 
         window.saveProfileSetup = async () => {
@@ -281,18 +264,17 @@
             const age = parseInt(document.getElementById('setup-age').value);
             const gender = document.getElementById('setup-gender').value;
             const city = document.getElementById('setup-city').value.trim();
-            const interests = getSelectedInterests('setup-interests');
 
-            if (!name || !username || !age || !gender || !city) { window.showToast("Fields required!", "error"); return; }
+            if (!name || !username || !age || !gender || !city) { window.showToast("All fields required!", "error"); return; }
             if (age < 18) { window.showToast("Strictly 18+!", "error"); return; }
-            const finalPicUrl = window.tempUploadedPhotoUrl || window.currentUserData.photoURL || 'https://via.placeholder.com/150';
-
+            
             try {
-                const payload = { uid: window.currentUserData.uid, name, username, age, gender, city, interests, email: window.currentUserData.email||"", profilePicUrl: finalPicUrl, bio: "Hey there!", online: true };
+                const finalPicUrl = await uploadPendingPhoto();
+                const payload = { uid: window.currentUserData.uid, name, username, age, gender, city, email: window.currentUserData.email||"", profilePicUrl: finalPicUrl, bio: "Hey there!", online: true };
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), payload, { merge: true });
                 window.currentUserData = payload;
                 switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
-            } catch (e) { window.showToast("Error", "error"); }
+            } catch (e) { window.showToast("Error saving profile", "error"); console.log(e); }
         };
 
         window.openSettings = () => {
@@ -300,9 +282,7 @@
             document.getElementById('edit-city').value = window.currentUserData.city || '';
             document.getElementById('edit-bio').value = window.currentUserData.bio || '';
             document.getElementById('edit-pic-preview').style.backgroundImage = `url('${window.currentUserData.profilePicUrl}')`;
-            
-            const myInts = window.currentUserData.interests || [];
-            document.querySelectorAll('.edit-int').forEach(cb => { cb.checked = myInts.includes(cb.value); });
+            window.pendingPhotoFile = null;
             window.loadBlockedUsers(); switchScreen('settings-screen');
         };
 
@@ -310,12 +290,11 @@
             const name = document.getElementById('edit-name').value.trim();
             const city = document.getElementById('edit-city').value.trim();
             const bio = document.getElementById('edit-bio').value.trim();
-            const interests = getSelectedInterests('edit-interests');
-
             if(!name || !city) { window.showToast("Name and City required!", "error"); return; }
-            const finalPicUrl = window.tempUploadedPhotoUrl || window.currentUserData.profilePicUrl;
+            
             try {
-                const updates = { name, city, bio, interests, profilePicUrl: finalPicUrl };
+                const finalPicUrl = await uploadPendingPhoto();
+                const updates = { name, city, bio, profilePicUrl: finalPicUrl };
                 await setDoc(doc(window.db, "Users", window.currentUserData.uid), updates, { merge: true });
                 window.currentUserData = { ...window.currentUserData, ...updates };
                 window.showToast("Profile Updated!"); switchScreen('home-screen');
@@ -352,15 +331,17 @@
             const snap = await getDocs(q);
             window.feedProfiles = [];
             snap.forEach(doc => { 
-                if (doc.id !== window.currentUserData.uid && !window.blockedUidList.includes(doc.id)) { window.feedProfiles.push(doc.data()); }
+                // CRITICAL FIX: Hide already swiped or blocked profiles
+                if (doc.id !== window.currentUserData.uid && !window.blockedUidList.includes(doc.id) && !window.swipedUidList.includes(doc.id)) { 
+                    window.feedProfiles.push(doc.data()); 
+                }
             });
             window.currentFeedIndex = 0; window.renderCurrentProfile();
         };
 
         window.renderCurrentProfile = () => {
             const card = document.getElementById('profile-card');
-            card.style.transition = 'none';
-            card.style.transform = `translateX(0px) rotate(0deg)`; 
+            card.style.transition = 'none'; card.style.transform = `translateX(0px) rotate(0deg)`; card.style.opacity = 1;
 
             if (window.feedProfiles.length === 0 || window.currentFeedIndex >= window.feedProfiles.length) {
                 card.innerHTML = `<div class="p-10 text-center flex flex-col justify-center items-center h-[450px]"><h3 class="text-xl font-bold dark:text-white">No Profiles Left! 🌍</h3></div>`;
@@ -374,29 +355,12 @@
                     <div id="stamp-nope" class="absolute top-12 right-6 border-4 border-red-500 text-red-500 font-extrabold text-4xl px-3 py-1 rounded-xl transform rotate-12 opacity-0 z-50 pointer-events-none tracking-widest bg-white/20">NOPE</div>
                 </div>
                 <div class="p-6 absolute bottom-0 w-full bg-gradient-to-t from-black via-black/80 to-transparent pt-20 pointer-events-none">
-                    <div class="flex justify-between items-end">
-                        <div><h2 id="card-name-age" class="text-3xl font-black text-white drop-shadow-md">${p.name}, ${p.age}</h2><p id="card-city" class="text-gray-200 font-medium drop-shadow-md">${p.city}</p></div>
-                        <div id="card-match-badge" class="hidden bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-lg shadow-lg"></div>
-                    </div>
-                    <div id="card-interests" class="flex gap-2 mt-3 flex-wrap"></div>
+                    <h2 id="card-name-age" class="text-3xl font-black text-white drop-shadow-md">${p.name}, ${p.age}</h2>
+                    <p id="card-city" class="text-gray-200 font-medium drop-shadow-md">${p.city}</p>
                 </div>`;
-
             document.getElementById('action-buttons-layer').classList.remove('hidden');
-
-            const matchBadge = document.getElementById('card-match-badge');
-            const theirInts = p.interests || []; const myInts = window.currentUserData.interests || [];
-            let common = 0; myInts.forEach(i => { if(theirInts.includes(i)) common++; });
-            if(myInts.length > 0 && common > 0) {
-                let percent = Math.round((common / Math.max(myInts.length, theirInts.length)) * 100);
-                matchBadge.innerText = `${percent}% Match 🔥`; matchBadge.classList.remove('hidden');
-            }
-
-            const tagContainer = document.getElementById('card-interests');
-            theirInts.forEach(int => {
-                const tag = document.createElement('span'); tag.className = "bg-white/20 text-white text-[10px] px-2 py-1 rounded-full border border-white/30"; tag.innerText = int; tagContainer.appendChild(tag);
-            });
         };
-// CLEAN TINDER SWIPE PHYSICS WITH STAMPS
+  // CLEAN SWIPE PHYSICS
         function setupSwipeListeners() {
             const card = document.getElementById('profile-card');
             let startX = 0, currentX = 0, isDragging = false;
@@ -408,70 +372,54 @@
                 if(!isDragging) return;
                 currentX = e.touches[0].clientX;
                 const deltaX = currentX - startX;
-                card.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.05}deg)`;
+                card.style.transform = `translateX(${deltaX}px) rotate(${deltaX * 0.03}deg)`; // Lighter rotation
+                card.style.opacity = Math.max(1 - Math.abs(deltaX)/500, 0.5); // Fade slightly
                 
-                // Stamp opacity based on drag distance
-                let stampLike = document.getElementById('stamp-like');
-                let stampNope = document.getElementById('stamp-nope');
+                let stampLike = document.getElementById('stamp-like'); let stampNope = document.getElementById('stamp-nope');
                 if(stampLike && stampNope) {
-                    if(deltaX > 0) {
-                        stampLike.style.opacity = Math.min(deltaX / 100, 1);
-                        stampNope.style.opacity = 0;
-                    } else {
-                        stampNope.style.opacity = Math.min(Math.abs(deltaX) / 100, 1);
-                        stampLike.style.opacity = 0;
-                    }
+                    if(deltaX > 0) { stampLike.style.opacity = Math.min(deltaX / 100, 1); stampNope.style.opacity = 0; } 
+                    else { stampNope.style.opacity = Math.min(Math.abs(deltaX) / 100, 1); stampLike.style.opacity = 0; }
                 }
             });
             card.addEventListener('touchend', (e) => {
-                if(!isDragging) return;
-                isDragging = false;
-                const deltaX = currentX - startX;
-                card.style.transition = 'transform 0.3s ease';
+                if(!isDragging) return; isDragging = false;
+                const deltaX = currentX - startX; card.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
                 
-                let stampLike = document.getElementById('stamp-like');
-                let stampNope = document.getElementById('stamp-nope');
-
                 if(deltaX > 100) {
-                    card.style.transform = `translateX(1000px) rotate(30deg)`; 
-                    if(stampLike) stampLike.style.opacity = 1;
+                    card.style.transform = `translateX(1000px) rotate(30deg)`; card.style.opacity = 0;
                     setTimeout(() => window.handleAction('like'), 300);
                 } else if (deltaX < -100) {
-                    card.style.transform = `translateX(-1000px) rotate(-30deg)`; 
-                    if(stampNope) stampNope.style.opacity = 1;
+                    card.style.transform = `translateX(-1000px) rotate(-30deg)`; card.style.opacity = 0;
                     setTimeout(() => window.handleAction('pass'), 300);
                 } else {
-                    card.style.transform = `translateX(0px) rotate(0deg)`; // Snap back
-                    if(stampLike) stampLike.style.opacity = 0;
-                    if(stampNope) stampNope.style.opacity = 0;
+                    card.style.transform = `translateX(0px) rotate(0deg)`; card.style.opacity = 1;
+                    if(document.getElementById('stamp-like')) document.getElementById('stamp-like').style.opacity = 0;
+                    if(document.getElementById('stamp-nope')) document.getElementById('stamp-nope').style.opacity = 0;
                 }
             });
         }
 
         window.handleAction = async (actionType) => {
             const target = window.feedProfiles[window.currentFeedIndex];
-            
             const card = document.getElementById('profile-card');
-            let stampLike = document.getElementById('stamp-like');
-            let stampNope = document.getElementById('stamp-nope');
 
             if (card.style.transform === 'translateX(0px) rotate(0deg)' || card.style.transform === '') {
-                card.style.transition = 'transform 0.3s ease';
-                if(actionType === 'like') {
-                    card.style.transform = `translateX(1000px) rotate(30deg)`;
-                    if(stampLike) stampLike.style.opacity = 1;
-                } else {
-                    card.style.transform = `translateX(-1000px) rotate(-30deg)`;
-                    if(stampNope) stampNope.style.opacity = 1;
-                }
+                card.style.transition = 'transform 0.3s ease, opacity 0.3s ease'; card.style.opacity = 0;
+                if(actionType === 'like') { card.style.transform = `translateX(1000px) rotate(30deg)`; } 
+                else { card.style.transform = `translateX(-1000px) rotate(-30deg)`; }
             }
 
+            const myUid = window.currentUserData.uid; const targetUid = target.uid;
+            window.swipedUidList.push(targetUid); // Prevent seeing them again
+
+            // Save Swipe to Database
+            await setDoc(doc(window.db, "Likes", `${myUid}_${targetUid}`), { from: myUid, to: targetUid, type: actionType });
+
+            // CRITICAL MATCH BUG FIX
             if (actionType === 'like') {
-                const myUid = window.currentUserData.uid; const targetUid = target.uid;
-                await setDoc(doc(window.db, "Likes", `${myUid}_${targetUid}`), { from: myUid, to: targetUid });
                 const revSnap = await getDoc(doc(window.db, "Likes", `${targetUid}_${myUid}`));
-                
-                if (revSnap.exists()) {
+                if (revSnap.exists() && revSnap.data().type === 'like') {
+                    // Create Match safely
                     const matchId = myUid < targetUid ? `${myUid}_${targetUid}` : `${targetUid}_${myUid}`;
                     await setDoc(doc(window.db, "Matches", matchId), { users: [myUid, targetUid], timestamp: Date.now() });
                     window.matchedProfileData = target;
@@ -487,18 +435,25 @@
 
         window.closeMatchOverlay = () => { document.getElementById('match-overlay').classList.add('hidden'); document.getElementById('match-overlay').classList.remove('flex'); };
 
+  // CHAT LIST
         window.openChatList = async () => {
             switchScreen('chat-list-screen');
             const container = document.getElementById('chat-list-container');
             container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">Loading chats...</div>`;
             try {
                 const myUid = window.currentUserData.uid;
-                const snap = await getDocs(query(collection(window.db, "Matches"), where("users", "array-contains", myUid)));
+                
+                // Fetch matches where I am inside the users array
+                const matchesRef = collection(window.db, "Matches");
+                const q = query(matchesRef, where("users", "array-contains", myUid));
+                const snap = await getDocs(q);
+                
                 if(snap.empty) { container.innerHTML = `<div class="p-10 text-center text-gray-400 text-sm">No matches yet. Keep swiping! ⚡</div>`; return; }
                 container.innerHTML = ""; 
                 snap.forEach(async (matchDoc) => {
                     const uids = matchDoc.data().users; const targetUid = uids.find(id => id !== myUid);
                     if(window.blockedUidList.includes(targetUid)) return;
+                    
                     const targetSnap = await getDoc(doc(window.db, "Users", targetUid));
                     if(targetSnap.exists()) {
                         const targetData = targetSnap.data();
@@ -511,7 +466,10 @@
                         container.appendChild(item);
                     }
                 });
-            } catch(e) { container.innerHTML = `<div class="p-10 text-center text-red-400 text-sm">Error</div>`; }
+            } catch(e) { 
+                console.error("Match error: ", e);
+                container.innerHTML = `<div class="p-10 text-center text-red-400 text-sm">Oops! Something went wrong loading matches.</div>`; 
+            }
         };
 
         window.launchDirectChat = (targetProfile) => { window.matchedProfileData = targetProfile; window.goToChatFromMatch(); };
@@ -552,16 +510,11 @@
             }
             switchScreen('chat-screen');
         };
-
-        window.listenToMessages = () => {
+window.listenToMessages = () => {
             const q = query(collection(window.db, "Chats", window.activeChatId, "Messages"), orderBy("timestamp", "asc"));
             window.unsubscribeChatListener = onSnapshot(q, (snapshot) => {
                 const container = document.getElementById('chat-messages-container');
-                const icebreakers = document.getElementById('icebreakers-layer');
                 container.innerHTML = `<div class="text-center text-gray-600 bg-yellow-100/90 mx-auto px-4 py-2 rounded-lg text-xs mt-3 shadow-sm font-medium">🔒 Messages are end-to-end encrypted</div>`; 
-
-                if(snapshot.empty) icebreakers.classList.remove('hidden');
-                else icebreakers.classList.add('hidden');
 
                 snapshot.forEach((docSnap) => {
                     const data = docSnap.data(); const isMe = data.senderId === window.currentUserData.uid;
@@ -587,7 +540,8 @@
                 setTimeout(() => { container.scrollTop = container.scrollHeight; }, 100);
             });
         };
-window.handleTyping = async () => {
+
+        window.handleTyping = async () => {
             if(!window.activeChatId) return;
             await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: true }, { merge: true });
             clearTimeout(typingTimeout);
@@ -595,8 +549,6 @@ window.handleTyping = async () => {
                 await setDoc(doc(window.db, "Chats", window.activeChatId), { [`typing_${window.currentUserData.uid}`]: false }, { merge: true });
             }, 1500);
         };
-
-        window.sendIcebreaker = (text) => { document.getElementById('msg-input').value = text; window.sendLiveMessage(); };
 
         window.sendLiveMessage = async () => {
             const input = document.getElementById('msg-input'); const text = input.value.trim();
