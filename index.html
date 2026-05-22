@@ -51,7 +51,7 @@
     <p id="loading-status-text" class="text-white text-sm font-medium tracking-widest mt-2 uppercase animate-pulse">Connecting...</p>
     
     <div class="absolute bottom-8 text-white/80 text-xs font-bold tracking-widest select-none">
-        DEVELOPED BY <span class="text-white text-sm block text-center font-black mt-1">VINAY (heart hijacker)</span>
+           DEVELOPED BY <span class="text-white text-sm block text-center font-black mt-1">VINAY (heart hijacker)</span>
     </div>
 </div>
 
@@ -138,7 +138,7 @@
                 <h4 class="text-lg font-black text-green-500 mt-1">GUMMULA VINAY (heart hijacker)<span class="text-xs font-medium text-gray-500 dark:text-gray-400">(@asthetic_coder)</span></h4>
                 
                 <div class="flex justify-center gap-6 mt-4 text-xl">
-                    <a href="https://github.com" target="_blank" class="text-gray-800 dark:text-white hover:text-pink-500 transition-colors"><i class="fa-brands fa-github"></i></a>
+                    <a href="https://github.com" target="https://github.com/Vinayvs0143" class="text-gray-800 dark:text-white hover:text-pink-500 transition-colors"><i class="fa-brands fa-github"></i></a>
                     <a href="https://instagram.com" target="https://www.instagram.com/_heart_hijacker_0143_?igsh=N3UxdXZuNDNyMGE1" class="text-pink-500 hover:scale-110 transition-transform"><i class="fa-brands fa-instagram"></i></a>
                     <a href="mailto:vinaygummula71@gmail.com" class="text-red-500 hover:text-pink-500 transition-colors"><i class="fa-solid fa-envelope"></i></a>
                     <a href="https://linkedin.com" target="https://www.linkedin.com/in/vinay-gummula-89684630a?utm_source=share_via&utm_content=profile&utm_medium=member_android" class="text-blue-600 hover:text-pink-500 transition-colors"><i class="fa-brands fa-linkedin"></i></a>
@@ -305,7 +305,7 @@
                 if (user) {
                     // Idea 1 Update: Update text when account is fetched
                     const statusText = document.getElementById('loading-status-text');
-                    if(statusText) statusText.innerText = "Your profile is now reading, please wait for few seconds...";
+                    if(statusText) statusText.innerText = "Your profile is going to be ready, please wait for few seconds...";
 
                     const userSnap = await getDoc(doc(window.db, "Users", user.uid));
                     
