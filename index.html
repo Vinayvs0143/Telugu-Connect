@@ -41,6 +41,7 @@
         .toast-animate { animation: slideDown 0.4s ease forwards; }
         #profile-card { touch-action: none; will-change: transform, opacity; transition: transform 0.3s ease, opacity 0.3s ease; }
     </style>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 w-screen overflow-hidden transition-colors duration-300 relative">
 
@@ -50,7 +51,7 @@
     <p id="loading-status-text" class="text-white text-sm font-medium tracking-widest mt-2 uppercase animate-pulse">Connecting...</p>
     
     <div class="absolute bottom-8 text-white/80 text-xs font-bold tracking-widest select-none">
-        DEVELOPED BY <span class="text-white text-sm block text-center font-black mt-1">VINAY</span>
+        DEVELOPED BY <span class="text-white text-sm block text-center font-black mt-1">VINAY (heart hijacker)</span>
     </div>
 </div>
 
@@ -58,7 +59,7 @@
         <h1 class="text-5xl font-extrabold text-white mb-2 drop-shadow-md mt-10">Telugu Connect</h1>
         <p class="text-white mb-8 text-center font-medium">Meet Telugu youths around you!</p>
         <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-sm text-center mb-10">
-            <h2 class="text-xl font-bold mb-4 text-gray-800">18+ Only</h2>
+            <h2 class="text-xl font-bold mb-4 text-gray-800">Welcome To Telugu Connect!</h2>
             
             <div class="space-y-3 mb-6">
                 <input type="email" id="auth-email" placeholder="Email Address" class="w-full border-2 border-gray-100 rounded-xl p-3 outline-none focus:border-pink-500">
@@ -97,8 +98,8 @@
                     <input type="number" id="setup-age" min="18" max="99" class="w-1/2 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="Age">
                     <select id="setup-gender" class="w-1/2 border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500">
                         <option value="">Gender</option>
-                        <option value="Boy">Boy</option>
-                        <option value="Girl">Girl</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
                     </select>
                 </div>
                 <input type="text" id="setup-city" class="w-full border-2 border-gray-100 dark:border-gray-700 dark:bg-gray-700 dark:text-white rounded-xl p-3 outline-none focus:border-pink-500" placeholder="City (e.g., Hyderabad)">
@@ -132,20 +133,18 @@
             
             <button onclick="logoutApp()" class="w-full max-w-sm border-2 border-gray-300 text-gray-700 dark:text-gray-300 font-bold py-3 mt-10 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-800 active:scale-95 transition">Logout</button>
             <button onclick="deleteAccount()" class="w-full max-w-sm bg-red-50 border-2 border-red-500 text-red-500 font-bold py-3 mt-4 rounded-xl hover:bg-red-500 hover:text-white dark:bg-transparent dark:hover:bg-red-600 transition active:scale-95">Delete Account 🗑️</button>
-
-                        <div class="w-full max-w-sm mt-10 border-t border-gray-200 dark:border-gray-700 pt-6 text-center select-none">
+            <div class="w-full max-w-sm mt-10 border-t border-gray-200 dark:border-gray-700 pt-6 text-center select-none">
                 <p class="text-xs font-bold text-gray-400 tracking-widest uppercase">Developed By</p>
-                <h4 class="text-lg font-black text-pink-500 mt-1">VINAY <span class="text-xs font-medium text-gray-500 dark:text-gray-400">(@asthetic_coder)</span></h4>
+                <h4 class="text-lg font-black text-green-500 mt-1">GUMMULA VINAY (heart hijacker)<span class="text-xs font-medium text-gray-500 dark:text-gray-400">(@asthetic_coder)</span></h4>
                 
-                <div class="flex justify-center gap-6 mt-4 text-2xl">
-                    <a href="https://github.com" target="_blank" title="GitHub" class="hover:scale-125 transition active:scale-95">🐱</a>
-                    <a href="https://instagram.com/asthetic_coder" target="_blank" title="Instagram" class="hover:scale-125 transition active:scale-95">📸</a>
-                    <a href="mailto:youremail@gmail.com" title="Email" class="hover:scale-125 transition active:scale-95">✉️</a>
-                    <a href="https://linkedin.com" target="_blank" title="LinkedIn" class="hover:scale-125 transition active:scale-95">💼</a>
+                <div class="flex justify-center gap-6 mt-4 text-xl">
+                    <a href="https://github.com" target="_blank" class="text-gray-800 dark:text-white hover:text-pink-500 transition-colors"><i class="fa-brands fa-github"></i></a>
+                    <a href="https://instagram.com" target="https://www.instagram.com/_heart_hijacker_0143_?igsh=N3UxdXZuNDNyMGE1" class="text-pink-500 hover:scale-110 transition-transform"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="mailto:vinaygummula71@gmail.com" class="text-red-500 hover:text-pink-500 transition-colors"><i class="fa-solid fa-envelope"></i></a>
+                    <a href="https://linkedin.com" target="https://www.linkedin.com/in/vinay-gummula-89684630a?utm_source=share_via&utm_content=profile&utm_medium=member_android" class="text-blue-600 hover:text-pink-500 transition-colors"><i class="fa-brands fa-linkedin"></i></a>
                 </div>
                 <p class="text-[10px] text-gray-400 mt-4 font-semibold tracking-wider">© 2026 Telugu Connect. All Rights Reserved.</p>
-                        </div>
-            
+            </div>        
         </div>
     </div>
 
@@ -163,11 +162,12 @@
 
         <div class="bg-white dark:bg-gray-800 p-4 shadow-sm flex justify-between items-center z-10">
             <h1 class="text-2xl font-black text-pink-500 tracking-tighter">Telugu Connect</h1>
-            <div class="flex gap-4 items-center">
-                <button onclick="toggleDarkMode()" class="text-2xl active:scale-75 transition">🌙</button>
-                <button onclick="openSettings()" class="text-2xl active:scale-75 transition">⚙️</button>
-                <button onclick="openChatList()" class="bg-pink-100 dark:bg-gray-700 text-pink-600 dark:text-white px-3 py-1.5 rounded-full font-bold active:scale-95 transition shadow-sm">Chats</button>
-            </div>
+                    <div class="flex gap-4 items-center">
+            <button onclick="toggleDarkMode()" class="text-xl text-gray-700 dark:text-yellow-400 active:scale-75 transition"><i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:block"></i></button>
+            <button onclick="openSettings()" class="text-xl text-gray-700 dark:text-gray-300 active:scale-75 transition"><i class="fa-solid fa-gear"></i></button>
+            <button onclick="openChatList()" class="bg-pink-100 dark:bg-gray-700 text-pink-600 dark:text-white px-4 py-1.5 rounded-full font-bold active:scale-95 transition shadow-sm text-sm">Chats</button>
+                    </div>
+            
         </div>
 
         <div class="flex-1 p-4 flex justify-center items-center relative overflow-hidden" id="feed-container">
@@ -189,15 +189,16 @@
     </div>
 
     <div id="chat-screen" class="screen flex-col w-full bg-white dark:bg-gray-900 relative absolute inset-0 z-50" style="display: none;">
-        <div class="bg-[#075e54] dark:bg-[#202c33] text-white p-4 shadow-md flex items-center gap-3 z-10 transition-colors">
-            <button onclick="exitChat()" class="font-bold text-2xl active:scale-90 transition">&larr;</button>
+                <div class="bg-[#075e54] dark:bg-[#202c33] text-white p-4 shadow-md flex items-center gap-3 z-10 transition-colors cursor-pointer" onclick="viewTargetProfileFromChat()">
+            <button onclick="event.stopPropagation(); exitChat();" class="font-bold text-2xl active:scale-90 transition mr-1">&larr;</button>
             <div id="chat-header-pic" class="w-10 h-10 rounded-full bg-gray-300 bg-cover bg-center shadow-sm"></div>
             <div class="flex-1">
                 <h1 id="chat-header-name" class="font-bold leading-tight">Chat</h1>
                 <p id="chat-header-status" class="text-xs text-gray-200 font-medium h-4">Connecting...</p>
             </div>
-            <button onclick="blockUser()" class="text-red-400 hover:text-red-300 font-bold text-xl" title="Block User">🚫</button>
-        </div>
+            <button onclick="event.stopPropagation(); blockUser();" class="text-red-400 hover:text-red-300 font-bold text-xl p-2" title="Block User"><i class="fa-solid fa-ban"></i></button>
+                </div>
+        
         
         <div class="flex-1 p-4 overflow-y-auto chat-bg flex flex-col gap-2" id="chat-messages-container"></div>
         
@@ -478,7 +479,7 @@
 
         window.fetchDiscoverFeed = async () => {
             try {
-                const targetGender = window.currentUserData.gender === "Boy" ? "Girl" : "Boy";
+                const targetGender = window.currentUserData.gender === "Male" ? "Female" : "Male";
                 const q = query(collection(window.db, "Users"), where("gender", "==", targetGender));
                 const snap = await getDocs(q); window.feedProfiles = [];
                 snap.forEach(doc => { 
@@ -716,5 +717,25 @@
             window.openChatList(); 
         };
     </script>
+        <div id="user-details-modal" class="fixed inset-0 bg-black/80 z-[100] hidden flex-col justify-center items-center p-4 backdrop-blur-md">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl relative border border-gray-100 dark:border-gray-700 max-h-[90dvh] overflow-y-auto">
+            <button onclick="closeProfileModal()" class="absolute top-4 right-4 bg-black/60 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg z-50 transition active:scale-90"><i class="fa-solid fa-xmark"></i></button>
+            <div id="modal-user-pic" class="w-full h-72 bg-cover bg-center relative"></div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <h2 id="modal-user-name-age" class="text-2xl font-black text-gray-800 dark:text-white"></h2>
+                    <p id="modal-user-username" class="text-pink-500 font-bold text-sm mt-0.5"></p>
+                </div>
+                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300 font-medium">
+                    <i class="fa-solid fa-location-dot text-pink-500 w-5"></i>
+                    <span id="modal-user-city"></span>
+                </div>
+                <div class="border-t border-gray-100 dark:border-gray-700 pt-3">
+                    <h4 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Interests & Bio</h4>
+                    <p id="modal-user-bio" class="text-sm text-gray-600 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl italic"></p>
+                </div>
+            </div>
+        </div>
+        </div>
 </body>
 </html>
