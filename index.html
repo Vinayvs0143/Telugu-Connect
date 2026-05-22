@@ -45,11 +45,14 @@
 <body class="bg-gray-100 dark:bg-gray-900 w-screen overflow-hidden transition-colors duration-300 relative">
 
     <div id="toast-msg" class="hidden fixed left-1/2 transform -translate-x-1/2 z-[999] px-6 py-3 rounded-full text-white font-bold shadow-2xl text-center min-w-[250px] transition-all"></div>
-
     <div id="loading-screen" class="screen flex flex-col justify-center items-center bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-50" style="display: flex;">
-        <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-2 animate-bounce drop-shadow-lg text-center tracking-tight">Telugu Connect</h1>
-        <p class="text-white text-sm font-medium tracking-widest mt-2">CONNECTING...</p>
+    <h1 class="text-4xl md:text-5xl font-extrabold text-white mb-2 animate-bounce drop-shadow-lg text-center tracking-tight">Telugu Connect</h1>
+    <p id="loading-status-text" class="text-white text-sm font-medium tracking-widest mt-2 uppercase animate-pulse">Connecting...</p>
+    
+    <div class="absolute bottom-8 text-white/80 text-xs font-bold tracking-widest select-none">
+        DEVELOPED BY <span class="text-white text-sm block text-center font-black mt-1">VINAY</span>
     </div>
+</div>
 
     <div id="login-screen" class="screen flex-col justify-center items-center bg-gradient-to-r from-pink-500 to-orange-400 p-6 absolute inset-0 z-40 overflow-y-auto" style="display: none;">
         <h1 class="text-5xl font-extrabold text-white mb-2 drop-shadow-md mt-10">Telugu Connect</h1>
@@ -129,6 +132,20 @@
             
             <button onclick="logoutApp()" class="w-full max-w-sm border-2 border-gray-300 text-gray-700 dark:text-gray-300 font-bold py-3 mt-10 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-800 active:scale-95 transition">Logout</button>
             <button onclick="deleteAccount()" class="w-full max-w-sm bg-red-50 border-2 border-red-500 text-red-500 font-bold py-3 mt-4 rounded-xl hover:bg-red-500 hover:text-white dark:bg-transparent dark:hover:bg-red-600 transition active:scale-95">Delete Account 🗑️</button>
+
+                        <div class="w-full max-w-sm mt-10 border-t border-gray-200 dark:border-gray-700 pt-6 text-center select-none">
+                <p class="text-xs font-bold text-gray-400 tracking-widest uppercase">Developed By</p>
+                <h4 class="text-lg font-black text-pink-500 mt-1">VINAY <span class="text-xs font-medium text-gray-500 dark:text-gray-400">(@asthetic_coder)</span></h4>
+                
+                <div class="flex justify-center gap-6 mt-4 text-2xl">
+                    <a href="https://github.com" target="_blank" title="GitHub" class="hover:scale-125 transition active:scale-95">🐱</a>
+                    <a href="https://instagram.com/asthetic_coder" target="_blank" title="Instagram" class="hover:scale-125 transition active:scale-95">📸</a>
+                    <a href="mailto:youremail@gmail.com" title="Email" class="hover:scale-125 transition active:scale-95">✉️</a>
+                    <a href="https://linkedin.com" target="_blank" title="LinkedIn" class="hover:scale-125 transition active:scale-95">💼</a>
+                </div>
+                <p class="text-[10px] text-gray-400 mt-4 font-semibold tracking-wider">© 2026 Telugu Connect. All Rights Reserved.</p>
+                        </div>
+            
         </div>
     </div>
 
@@ -191,10 +208,13 @@
     </div>
 
     <script>
-        function switchScreen(targetScreenId) {
+                function switchScreen(targetScreenId) {
             document.querySelectorAll('.screen').forEach(s => { s.style.display = 'none'; });
             const target = document.getElementById(targetScreenId);
             if(target) target.style.display = 'flex';
+            
+            // Re-fresh Persistence: Save current screen state to cache
+            localStorage.setItem('tc_last_screen', targetScreenId);
         }
 
         window.showToast = (msg, type = 'success') => {
@@ -212,11 +232,13 @@
         }
         
         let isAuthResolved = false;
+        // Idea 3 Optimization: Shorter timeout for faster fail-safe transition
         setTimeout(() => {
             if(!isAuthResolved) {
                 switchScreen('login-screen');
             }
-        }, 4000);
+        }, 2500);
+        
     </script>
 
     <script type="module">
@@ -275,10 +297,15 @@
             }
         };
 
+                // REAL-TIME SESSION PIPE HANDLER WITH SCREEN MEMORY
         onAuthStateChanged(window.auth, async (user) => {
             isAuthResolved = true; 
             try {
                 if (user) {
+                    // Idea 1 Update: Update text when account is fetched
+                    const statusText = document.getElementById('loading-status-text');
+                    if(statusText) statusText.innerText = "Your profile is now reading, please wait for few seconds...";
+
                     const userSnap = await getDoc(doc(window.db, "Users", user.uid));
                     
                     if(!userSnap.exists() || !userSnap.data().age) {
@@ -302,7 +329,18 @@
                     } catch(e){ window.swipedUidList = []; }
 
                     window.showToast("Welcome back, " + window.currentUserData.name + "!");
-                    switchScreen('home-screen'); window.fetchDiscoverFeed(); setupSwipeListeners();
+                    
+                    // Idea 5 Fix: If page is refreshed, check cache and restore the screen smoothly
+                    const lastSavedScreen = localStorage.getItem('tc_last_screen');
+                    if(lastSavedScreen && lastSavedScreen !== 'loading-screen' && lastSavedScreen !== 'login-screen') {
+                        switchScreen(lastSavedScreen);
+                        if(lastSavedScreen === 'chat-list-screen') window.openChatList();
+                    } else {
+                        switchScreen('home-screen');
+                    }
+                    
+                    window.fetchDiscoverFeed(); 
+                    setupSwipeListeners();
                 } else { 
                     switchScreen('login-screen'); 
                 }
@@ -311,6 +349,32 @@
                 switchScreen('login-screen'); 
             }
         });
+
+        // Trigger loading text immediately on button triggers
+        window.handleGoogleLogin = async () => { 
+            try { 
+                document.getElementById('loading-status-text').innerText = "Opening Google Portal...";
+                switchScreen('loading-screen');
+                await signInWithPopup(window.auth, window.provider); 
+            } catch (e) { 
+                switchScreen('login-screen');
+                window.showToast("Google Auth Failed", "error"); 
+            } 
+        };
+        
+        window.handleEmailLogin = async () => {
+            const e = document.getElementById('auth-email').value.trim(); const p = document.getElementById('auth-password').value;
+            if(!e || !p) return window.showToast("Enter email & password", "error");
+            try { 
+                document.getElementById('loading-status-text').innerText = "Verifying Credentials...";
+                switchScreen('loading-screen');
+                await signInWithEmailAndPassword(window.auth, e, p); 
+            } catch(err) { 
+                switchScreen('login-screen');
+                alert("❌ LOGIN ERROR: " + err.message); 
+            }
+        };
+        
 
       // ROBUST CANVAS COMPRESSION PIPELINE (Bypasses Storage entirely)
         window.handleInstantPhotoPreview = (event, source) => {
